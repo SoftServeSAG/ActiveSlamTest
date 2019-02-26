@@ -9,7 +9,7 @@ project(explore_stack)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
         COMPONENTS
-        gazebo
+        #gazebo
         turtlebot3_navigation
         turtlebot3_slam
         turtlebot3_bringup
