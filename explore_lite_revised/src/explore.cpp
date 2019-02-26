@@ -150,7 +150,7 @@ void Explore::visualizeFrontiers(
     }
     markers.push_back(m);
     ++id;
-    m.type = visualization_msgs::Marker::SPHERE;
+    m.type = visualization_msgs::Marker::ARROW;
     m.id = int(id);
     m.pose.position = frontier.initial;
     // scale frontier according to its cost (costier frontiers will be smaller)

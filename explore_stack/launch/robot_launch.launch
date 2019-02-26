@@ -47,11 +47,11 @@
     <!--GAZEBO-->
 
 
-    <node name="rviz"
-          pkg="rviz"
-          type="rviz"
-          args="-d $(find explore_stack)/rviz/explore_lite_vanilla.rviz"
-    />
+    <!--<node name="rviz"-->
+          <!--pkg="rviz"-->
+          <!--type="rviz"-->
+          <!--args="-d $(find explore_stack)/rviz/explore_lite_vanilla.rviz"-->
+    <!--/>-->
 
 
 
