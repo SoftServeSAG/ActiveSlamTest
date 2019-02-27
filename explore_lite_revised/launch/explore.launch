@@ -1,5 +1,5 @@
 <launch>
-<node pkg="explore_lite_revised" type="explore" respawn="false" name="explore" output="screen">
+<node pkg="explore_lite_revised" type="explore_lite_revised" respawn="false" name="explore" output="screen">
   <param name="robot_base_frame" value="base_link"/>
   <param name="costmap_topic" value="map"/>
   <param name="costmap_updates_topic" value="map_updates"/>
