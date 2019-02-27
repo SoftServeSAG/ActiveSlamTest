@@ -85,11 +85,13 @@
 
     <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/>
 
-
-    <include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch">
+    <include file="$(find turtlebot3_slam)/launch/turtlebot3_slam.launch">
+        <arg name="slam_methods" value="gmapping"/>
+    </include>
+    <!--<include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch">-->
         <!--<arg name="model" value="$(arg model)"/>-->
         <!--<arg name="configuration_basename" value="$(arg configuration_basename)"/>-->
-    </include>
+    <!--</include>-->
     <!--/ SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
 
 
