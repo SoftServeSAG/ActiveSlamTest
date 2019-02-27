@@ -37,8 +37,8 @@
         <!--<arg name="debug" value="false"/>-->
     <!--</include>-->
 
-    <!--<param name="robot_description"-->
-           <!--command="$(find xacro)/xacro &#45;&#45;inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />-->
+    <param name="robot_description"
+           command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
     <!--<node name="spawn_urdf"-->
           <!--pkg="gazebo_ros"-->
