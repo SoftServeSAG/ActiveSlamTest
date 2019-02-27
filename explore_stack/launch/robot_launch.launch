@@ -1,6 +1,6 @@
 <launch>
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-
+    <!--<-->
 
 
     <arg name="cmd_vel_topic" default="/cmd_vel" />
@@ -11,6 +11,31 @@
         <!--<arg name="model" value="$(arg model)"/>-->
     </include>
 
+    <!--<include file="$(find turtlebot3_navigation)/launch/move_base.launch"/>-->
+    <!-- move_base -->
+    <node pkg="move_base"
+          type="move_base"
+          respawn="false"
+          name="move_base"
+          output="screen"
+          launch-prefix="xterm -e">
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+        <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />
+
+        <rosparam file="$(find explore_stack)/param/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />
+        <rosparam file="$(find explore_stack)/param/move_base_params_local.yaml" command="load" />
+
+        <rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
+        <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+        <remap from="odom" to="$(arg odom_topic)"/>
+    </node>
+
+    <!--/ move_base -->
 
 
 
@@ -37,8 +62,8 @@
         <!--<arg name="debug" value="false"/>-->
     <!--</include>-->
 
-    <param name="robot_description"
-           command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+    <!--<param name="robot_description"-->
+           <!--command="$(find xacro)/xacro &#45;&#45;inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />-->
 
     <!--<node name="spawn_urdf"-->
           <!--pkg="gazebo_ros"-->
@@ -60,37 +85,39 @@
 
     <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/>
 
-
-    <include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch">
-        <arg name="model" value="$(arg model)"/>
-        <arg name="configuration_basename" value="$(arg configuration_basename)"/>
+    <include file="$(find turtlebot3_slam)/launch/turtlebot3_slam.launch">
+        <arg name="slam_methods" value="$(arg slam_methods)"/>
     </include>
+    <!--<include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch">-->
+        <!--<arg name="model" value="$(arg model)"/>-->
+        <!--<arg name="configuration_basename" value="$(arg configuration_basename)"/>-->
+    <!--</include>-->
     <!--/ SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
 
 
 
     <!-- move_base -->
-    <node pkg="move_base"
-          type="move_base"
-          respawn="false"
-          name="move_base"
-          output="screen"
-          launch-prefix="xterm -e">
-        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
-        <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />
+    <!--<node pkg="move_base"-->
+          <!--type="move_base"-->
+          <!--respawn="false"-->
+          <!--name="move_base"-->
+          <!--output="screen"-->
+          <!--launch-prefix="xterm -e">-->
+        <!--<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />-->
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />-->
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />-->
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />-->
 
-        <rosparam file="$(find explore_stack)/param/local_costmap_params.yaml" command="load" />
-        <rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />
-        <rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/move_base_params_local.yaml" command="load" />
+        <!--<rosparam file="$(find explore_stack)/param/local_costmap_params.yaml" command="load" />-->
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />-->
+        <!--<rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />-->
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />-->
+        <!--<rosparam file="$(find explore_stack)/param/move_base_params_local.yaml" command="load" />-->
 
-        <rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
-        <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
-        <remap from="odom" to="$(arg odom_topic)"/>
-    </node>
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />-->
+        <!--<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>-->
+        <!--<remap from="odom" to="$(arg odom_topic)"/>-->
+    <!--</node>-->
     <!--/ move_base -->
 
 
