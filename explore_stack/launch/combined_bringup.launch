@@ -85,7 +85,7 @@
         <rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />
         <rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />
         <rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/move_base_params_local.yaml" command="load" />
+        <rosparam file="move_base_params.yaml" command="load" />
 
         <rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
         <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
