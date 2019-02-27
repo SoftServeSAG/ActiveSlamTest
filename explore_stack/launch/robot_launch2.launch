@@ -3,8 +3,8 @@
     <!--<-->
 
 
-    <!--<arg name="cmd_vel_topic" default="/cmd_vel" />-->
-    <!--<arg name="odom_topic" default="odom" />-->
+    <arg name="cmd_vel_topic" default="/cmd_vel" />
+    <arg name="odom_topic" default="odom" />
 
 
     <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch">
