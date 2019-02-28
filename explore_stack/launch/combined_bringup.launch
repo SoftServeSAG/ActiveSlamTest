@@ -15,8 +15,8 @@
 
 
     <!--GAZEBO-->
-    <arg name="world_name" default="turtlebot3_house"/>
-    <!--<arg name="world_name" default="turtlebot3_stage_3"/>-->
+    <!--<arg name="world_name" default="turtlebot3_house"/>-->
+    <arg name="world_name" default="turtlebot3_stage_3"/>
 
 
     <arg name="x_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>
@@ -85,7 +85,7 @@
         <rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />
         <rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />
         <rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />
-        <rosparam file="move_base_params.yaml" command="load" />
+        <rosparam file="$(find explore_stack)/param/move_base_params.yaml" command="load" />
 
         <rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
         <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>

@@ -50,6 +50,8 @@ void commandVelocityReceived(const geometry_msgs::Twist &msgIn){
     ROS_DEBUG_STREAM("timer reset");
 }
 
+// TODO constantly check if cmd_vel is alive and reconnect in case of restart (IF it is generally possible)
+
 int main(int argc, char** argv){
     ros::init(argc, argv, "cmd_vel_watchdog");
     ros::NodeHandle nh;

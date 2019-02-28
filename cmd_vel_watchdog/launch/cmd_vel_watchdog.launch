@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="cmd_vel_watchdog" type="cmd_vel_watchdog" respawn="true" name="cmd_vel_watchdog" output="screen">
+
+    </node>
+    <!--<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>-->
+    <!--TODO add remapping-->
+</launch>
+<!--TODO parametrise node-->
