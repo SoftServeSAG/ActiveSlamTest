@@ -34,25 +34,32 @@ void initGlobals(ros::NodeHandle &nh){
     global_timer->start();
 }
 
-
+bool isZeroSpeed(const geometry_msgs::Twist &msgIn){
+    return
+    msgIn.angular.z != 0 &&
+    msgIn.linear.x != 0 &&
+    msgIn.angular.x != 0 &&
+    msgIn.angular.y != 0 &&
+    msgIn.linear.x != 0  &&
+    msgIn.linear.y != 0 ;
+}
 
 
 // resetting timer once received massage
 void commandVelocityReceived(const geometry_msgs::Twist &msgIn){
-    global_timer->setPeriod(*DEFAULT_WATCHDOG_TIMEOUT, true);
-    global_timer->start();
     ROS_DEBUG_STREAM(
             "velocity msg received" << " Linear= " <<
-            msgIn.linear.x <<" " << msgIn.linear.y <<" " << msgIn.linear.z <<
-            " Angular= " <<
-            msgIn.angular.x <<" " << msgIn.angular.y <<" " << msgIn.angular.z
-            );
-    ROS_DEBUG_STREAM("timer reset");
+                                    msgIn.linear.x <<" " << msgIn.linear.y <<" " << msgIn.linear.z <<
+                                    " Angular= " <<
+                                    msgIn.angular.x <<" " << msgIn.angular.y <<" " << msgIn.angular.z
+    );
+    if ( ! isZeroSpeed(msgIn) ) {
+        global_timer->setPeriod(*DEFAULT_WATCHDOG_TIMEOUT, true);
+        global_timer->start();
+        ROS_DEBUG_STREAM("timer reset");
+    }
 }
 
-// TODO constantly check if cmd_vel is alive and reconnect in case of restart (IF it is generally possible)created cmd_vel_watchdog package, template of code provided
-
-// TODO 
 
 int main(int argc, char** argv){
     ros::init(argc, argv, "cmd_vel_watchdog");
@@ -72,7 +79,11 @@ int main(int argc, char** argv){
     ROS_INFO_STREAM(this_node_name <<" subscribed to topic " << sub.getTopic());
 
     while(ros::ok()){
-        ros::spin();
+        if (sub.getNumPublishers() == 0){
+            sub  = nh.subscribe(default_velocity_topic, 1, &commandVelocityReceived);
+        }
+//        ros::spinOnce();
+ros::spin();
     }
 
     ROS_WARN_STREAM(this_node_name <<" SHUT_DOWN ");
