@@ -79,9 +79,11 @@ int main(int argc, char** argv){
     ROS_INFO_STREAM(this_node_name <<" subscribed to topic " << sub.getTopic());
 
     while(ros::ok()){
-        if (sub.getNumPublishers() == 0){
-            sub  = nh.subscribe(default_velocity_topic, 1, &commandVelocityReceived);
-        }
+//        for the case of problems with reconnects
+// TODO check if it works
+//        if (sub.getNumPublishers() == 0){
+//            sub  = nh.subscribe(default_velocity_topic, 1, &commandVelocityReceived);
+//        }
 //        ros::spinOnce();
 ros::spin();
     }
