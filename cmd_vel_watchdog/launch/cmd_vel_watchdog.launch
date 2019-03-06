@@ -1,8 +1,11 @@
 <launch>
-    <node pkg="cmd_vel_watchdog" type="cmd_vel_watchdog" respawn="true" name="cmd_vel_watchdog" output="screen">
-
+    <arg name="velocity_topic" default="cmd_vel"/>
+    <node pkg="cmd_vel_watchdog"
+          type="cmd_vel_watchdog"
+          respawn="true"
+          name="cmd_vel_watchdog"
+          output="screen">
+        <remap from="cmd_vel" to="$(arg velocity_topic)"/>
     </node>
-    <!--<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>-->
-    <!--TODO add remapping-->
+    <param name="watchdog_patience" value="10.0" type="double"/>
 </launch>
-<!--TODO parametrise node-->
