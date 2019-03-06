@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>cmd_vel_watchdog</name>
+  <name>velocity_topic_watchdog</name>
   <version>0.0.0</version>
-  <description>The cmd_vel_watchdog package</description>
+  <description>The velocity_topic_watchdog package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

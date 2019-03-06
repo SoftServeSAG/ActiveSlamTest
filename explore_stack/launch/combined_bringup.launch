@@ -11,8 +11,8 @@
         <arg name="model" value="$(arg model)"/>
     </include>
 
-    <!--<include file="$(find cmd_vel_watchdog)/launch/cmd_vel_watchdog.launch">-->
-    <!--</include>-->
+    <include file="$(find velocity_topic_watchdog)/launch/velocity_topic_watchdog.launch">
+    </include>
 
 
     <!--GAZEBO-->

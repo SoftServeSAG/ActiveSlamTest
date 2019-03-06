@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(cmd_vel_watchdog)
+project(velocity_topic_watchdog)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -104,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES cmd_vel_watchdog
+#  LIBRARIES velocity_topic_watchdog
 #  CATKIN_DEPENDS geometry_msgs roscpp rospy
 #  DEPENDS system_lib
 )
@@ -122,7 +122,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/cmd_vel_watchdog.cpp
+#   src/${PROJECT_NAME}/velocity_topic_watchdog.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -133,7 +133,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(cmd_vel_watchdog src/cmd_vel_watchdog.cpp)
+add_executable(velocity_topic_watchdog src/velocity_topic_watchdog.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,7 +146,7 @@ add_executable(cmd_vel_watchdog src/cmd_vel_watchdog.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(cmd_vel_watchdog
+ target_link_libraries(velocity_topic_watchdog
    ${catkin_LIBRARIES}
  )
 
@@ -158,7 +158,7 @@ add_executable(cmd_vel_watchdog src/cmd_vel_watchdog.cpp)
 ## Install ##
 #############
 # install nodes
-install(TARGETS cmd_vel_watchdog
+install(TARGETS velocity_topic_watchdog
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

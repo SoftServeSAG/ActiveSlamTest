@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 
-namespace cmd_vel_watchdog{
+namespace velocity_topic_watchdog{
 
 ros::Publisher *pub_ptr;
 ros::Timer *global_timer;
@@ -16,7 +16,7 @@ ros::Duration *watchdog_duration;
 double watchdog_timeout_param (3.0);
 
 void watchdogTimerCallback(const ros::TimerEvent &timerEvent){
-    ROS_WARN_STREAM("velocity topic watchdog activated!");
+    ROS_WARN_STREAM("velocity_topic_watchdog activated!");
     pub_ptr->publish(*stop_msg_ptr);
     ROS_WARN_STREAM("STOP MSG PUBLISHED to [" << pub_ptr->getTopic() << "]");
     global_timer->stop();
@@ -63,20 +63,20 @@ void commandVelocityReceived(const geometry_msgs::Twist &msgIn){
 }
 
 
-} // namespace cmd_vel_watchdog
+} // namespace velocity_topic_watchdog
 int main(int argc, char** argv){
-    ros::init(argc, argv, "cmd_vel_watchdog");
+    ros::init(argc, argv, "velocity_topic_watchdog");
     ros::NodeHandle nh;
 
-    if (!nh.getParam("watchdog_patience", cmd_vel_watchdog::watchdog_timeout_param)){
+    if (!nh.getParam("watchdog_patience", velocity_topic_watchdog::watchdog_timeout_param)){
         ROS_INFO_STREAM(
                 "watchdog_patience param is not found, setting to default = " <<
-                                                                              cmd_vel_watchdog::DEFAULT_WATCHDOG_TIMEOUT << " sec");
-        cmd_vel_watchdog::watchdog_timeout_param = cmd_vel_watchdog::DEFAULT_WATCHDOG_TIMEOUT;
+                                                                              velocity_topic_watchdog::DEFAULT_WATCHDOG_TIMEOUT << " sec");
+        velocity_topic_watchdog::watchdog_timeout_param = velocity_topic_watchdog::DEFAULT_WATCHDOG_TIMEOUT;
     }
-    ROS_INFO_STREAM("watchdog time set to " << cmd_vel_watchdog::watchdog_timeout_param << " [sec]");
+    ROS_INFO_STREAM("watchdog time set to " << velocity_topic_watchdog::watchdog_timeout_param << " [sec]");
 
-    cmd_vel_watchdog::initGlobals(nh);
+    velocity_topic_watchdog::initGlobals(nh);
 
 
 
@@ -84,11 +84,11 @@ int main(int argc, char** argv){
     const std::string &this_node_name = ros::this_node::getName();
     ROS_INFO_STREAM(this_node_name << " created");
 
-    cmd_vel_watchdog::pub_ptr = new ros::Publisher(nh.advertise<geometry_msgs::Twist>(default_velocity_topic, 1));
+    velocity_topic_watchdog::pub_ptr = new ros::Publisher(nh.advertise<geometry_msgs::Twist>(default_velocity_topic, 1));
 
-    ROS_INFO_STREAM(this_node_name <<" advertised publisher to " << cmd_vel_watchdog::pub_ptr->getTopic());
+    ROS_INFO_STREAM(this_node_name <<" advertised publisher to " << velocity_topic_watchdog::pub_ptr->getTopic());
 
-    ros::Subscriber sub  = nh.subscribe(default_velocity_topic, 1, &cmd_vel_watchdog::commandVelocityReceived);
+    ros::Subscriber sub  = nh.subscribe(default_velocity_topic, 1, &velocity_topic_watchdog::commandVelocityReceived);
     ROS_INFO_STREAM(this_node_name <<" subscribed to topic " << sub.getTopic());
 
     while(ros::ok()){
@@ -96,8 +96,8 @@ int main(int argc, char** argv){
     }
 
     ROS_WARN_STREAM(this_node_name <<" SHUT_DOWN ");
-    delete cmd_vel_watchdog::pub_ptr;
-    delete cmd_vel_watchdog::global_timer;
-    delete cmd_vel_watchdog::stop_msg_ptr;
-    delete cmd_vel_watchdog::watchdog_duration;
+    delete velocity_topic_watchdog::pub_ptr;
+    delete velocity_topic_watchdog::global_timer;
+    delete velocity_topic_watchdog::stop_msg_ptr;
+    delete velocity_topic_watchdog::watchdog_duration;
 }
