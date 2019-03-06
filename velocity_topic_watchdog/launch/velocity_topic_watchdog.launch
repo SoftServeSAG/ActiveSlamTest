@@ -1,0 +1,11 @@
+<launch>
+    <arg name="velocity_topic" default="cmd_vel"/>
+    <node pkg="velocity_topic_watchdog"
+          type="velocity_topic_watchdog"
+          respawn="true"
+          name="velocity_topic_watchdog"
+          output="screen">
+        <remap from="cmd_vel" to="$(arg velocity_topic)"/>
+    </node>
+    <param name="watchdog_patience" value="2.0" type="double"/>
+</launch>
