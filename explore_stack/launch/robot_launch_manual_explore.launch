@@ -10,80 +10,6 @@
     <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch">
     </include>
 
-    <!--<include file="$(find turtlebot3_navigation)/launch/move_base.launch"/>-->
-    <!-- move_base -->
-    <!--<node pkg="move_base"-->
-          <!--type="move_base"-->
-          <!--respawn="false"-->
-          <!--name="move_base"-->
-          <!--output="screen"-->
-          <!--launch-prefix="xterm -e">-->
-        <!--<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />-->
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />-->
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />-->
-        <!--<rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />-->
-        <!--<rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />-->
-
-
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />-->
-
-        <!--<rosparam file="$(find explore_stack)/param/local_costmap_params.yaml" command="load" />-->
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />-->
-        <!--<rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />-->
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />-->
-        <!--<rosparam file="$(find explore_stack)/param/move_base_params.yaml" command="load" />-->
-
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />-->
-        <!--<rosparam file="$(find explore_stack)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />-->
-
-
-        <!--<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>-->
-        <!--<remap from="odom" to="$(arg odom_topic)"/>-->
-    <!--</node>-->
-
-    <!--/ move_base -->
-
-
-
-    <!--GAZEBO-->
-    <!--<arg name="world_name" default="turtlebot3_house"/>-->
-    <!--<arg name="world_name" default="turtlebot3_stage_3"/>-->
-
-
-    <!--<arg name="x_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
-    <!--<arg name="y_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
-    <!--<arg name="z_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
-    <!--<arg name="x_pos" default="-3.0" if="$(eval world_name == 'turtlebot3_house')"/>-->
-    <!--<arg name="y_pos" default="1.0" if="$(eval world_name == 'turtlebot3_house')"/>-->
-    <!--<arg name="z_pos" default="0.0" if="$(eval world_name == 'turtlebot3_house')"/>-->
-
-
-    <!--http://answers.gazebosim.org/question/16076/running-gazebo-on-docker-affects-simulation-speed-meshes-and-world-objects/-->
-    <!--<include file="$(find gazebo_ros)/launch/empty_world.launch">-->
-        <!--<arg name="world_name" value="$(find explore_stack)/worlds/$(arg world_name).world"/>-->
-        <!--<arg name="paused" value="false"/>-->
-        <!--<arg name="use_sim_time" value="true"/>-->
-        <!--<arg name="gui" value="false"/>-->
-        <!--<arg name="headless" value="false"/>-->
-        <!--<arg name="debug" value="false"/>-->
-    <!--</include>-->
-
-    <!--<param name="robot_description"-->
-           <!--command="$(find xacro)/xacro &#45;&#45;inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />-->
-
-    <!--<node name="spawn_urdf"-->
-          <!--pkg="gazebo_ros"-->
-          <!--type="spawn_model"-->
-          <!--args="-urdf -model turtlebot3 -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />-->
-    <!--GAZEBO-->
-
-
-    <!--<node name="rviz"-->
-          <!--pkg="rviz"-->
-          <!--type="rviz"-->
-          <!--args="-d $(find explore_stack)/rviz/explore_lite_vanilla.rviz"-->
-    <!--/>-->
-
 
     <!-- SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
     <arg name="slam_methods" default="gmapping" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/>
@@ -93,36 +19,5 @@
     <include file="$(find turtlebot3_slam)/launch/turtlebot3_slam.launch">
         <arg name="slam_methods" value="$(arg slam_methods)"/>
     </include>
-    <!--<include file="$(find turtlebot3_slam)/launch/turtlebot3_$(arg slam_methods).launch">-->
-        <!--<arg name="model" value="$(arg model)"/>-->
-        <!--<arg name="configuration_basename" value="$(arg configuration_basename)"/>-->
-    <!--</include>-->
-    <!--/ SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
-
-
-
-    <!--<include file="$(find explore_lite_revised)/launch/explore.launch" launch-prefix="xterm -e">-->
-        <!--TODO parameters tuning if needed-->
-        <!--TODO name and dir for map save-->
-    <!--</include>-->
-    <!--<node pkg="explore_lite_revised"-->
-          <!--type="explore_lite_revised"-->
-          <!--name="explore_lite_revised"-->
-          <!--respawn="false"-->
-          <!--output="screen"-->
-          <!--launch-prefix="xterm -geometry 93x31+100+350 -e">-->
-        <!--&lt;!&ndash;todo manage terminal postion a little bit better&ndash;&gt;-->
-        <!--<param name="robot_base_frame" value="base_link"/>-->
-        <!--<param name="costmap_topic" value="map"/>-->
-        <!--<param name="costmap_updates_topic" value="map_updates"/>-->
-        <!--<param name="visualize" value="true"/>-->
-        <!--<param name="planner_frequency" value="0.33"/>-->
-        <!--<param name="progress_timeout" value="30.0"/>-->
-        <!--<param name="potential_scale" value="3.0"/>-->
-        <!--<param name="orientation_scale" value="0.0"/>-->
-        <!--<param name="gain_scale" value="1.0"/>-->
-        <!--<param name="transform_tolerance" value="0.3"/>-->
-        <!--<param name="min_frontier_size" value="0.75"/>-->
-    <!--</node>-->
 
 </launch>

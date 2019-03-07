@@ -19,7 +19,9 @@
     <arg name="world_name" default="ss_hq4"/>
     <!--<arg name="world_name" default="office"/>-->
 
-
+    <!--<group>-->
+        <!---->
+    <!--</group>-->
     <!--<arg name="x_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
     <!--<arg name="y_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
     <!--<arg name="z_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
@@ -81,73 +83,12 @@
         <arg name="cmd_vel_topic" default="/cmd_vel" />
         <arg name="odom_topic" default="odom" />
     </include>
-    <!--<node pkg="move_base"-->
-          <!--type="move_base"-->
-          <!--respawn="false"-->
-          <!--name="move_base"-->
-          <!--output="screen"-->
-          <!--launch-prefix="xterm -e">-->
-        <!--<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />-->
+    <!-- /move_base -->
 
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />-->
-        <!--<rosparam file="$(find explore_stack)/param/move_base_params.yaml" command="load" />-->
-
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />-->
-        <!--<rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />-->
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />-->
-        <!--<rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />-->
-
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />-->
-        <!--<rosparam file="$(find explore_stack)/param/local_costmap_params.yaml" command="load" />-->
-
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />-->
-        <!--<rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />-->
-
-
-        <!--<rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />-->
-        <!--<rosparam file="$(find explore_stack)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />-->
-
-        <!--<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>-->
-        <!--<remap from="odom" to="$(arg odom_topic)"/>-->
-    <!--</node>-->
-    <!--/ move_base -->
-
-
-
-    <!--<include file="$(find explore_lite_revised)/launch/explore.launch" launch-prefix="xterm -e">-->
-        <!--TODO parameters tuning if needed-->
-        <!--TODO name and dir for map save-->
-    <!--</include>-->
 
     <include file="$(find explore_stack)/launch/explore_lite_revised.launch">
-        <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-        <arg name="cmd_vel_topic" default="/cmd_vel" />
-        <arg name="odom_topic" default="odom" />
-
         <!--TODO parameters tuning if needed-->
-    <!--TODO name and dir for map save-->
+        <!--TODO name and dir for map save-->
     </include>
-
-    <!--<node pkg="explore_lite_revised"-->
-          <!--type="explore_lite_revised"-->
-          <!--name="explore_lite_revised"-->
-          <!--respawn="false"-->
-          <!--output="screen"-->
-          <!--launch-prefix="xterm -geometry 93x31+100+350 -e">-->
-        <!--&lt;!&ndash;todo manage terminal postion a little bit better&ndash;&gt;-->
-        <!--<param name="robot_base_frame" value="base_link"/>-->
-        <!--<param name="costmap_topic" value="map"/>-->
-        <!--<param name="costmap_updates_topic" value="map_updates"/>-->
-        <!--<param name="visualize" value="true"/>-->
-        <!--<param name="planner_frequency" value="0.33"/>-->
-        <!--<param name="progress_timeout" value="30.0"/>-->
-        <!--<param name="potential_scale" value="3.0"/>-->
-        <!--<param name="orientation_scale" value="0.0"/>-->
-        <!--<param name="gain_scale" value="1.0"/>-->
-        <!--<param name="transform_tolerance" value="0.3"/>-->
-        <!--<param name="min_frontier_size" value="0.75"/>-->
-    <!--</node>-->
-    
-
 
 </launch>
