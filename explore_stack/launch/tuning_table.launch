@@ -1,8 +1,6 @@
 <launch>
+
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-
-
-
     <arg name="cmd_vel_topic" default="/cmd_vel" />
     <arg name="odom_topic" default="odom" />
 
@@ -78,35 +76,40 @@
 
 
     <!-- move_base -->
-    <node pkg="move_base"
-          type="move_base"
-          respawn="false"
-          name="move_base"
-          output="screen"
-          launch-prefix="xterm -e">
-        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <include file="$(find explore_stack)/launch/move_base.launch">
+        <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+        <arg name="cmd_vel_topic" default="/cmd_vel" />
+        <arg name="odom_topic" default="odom" />
+    </include>
+    <!--<node pkg="move_base"-->
+          <!--type="move_base"-->
+          <!--respawn="false"-->
+          <!--name="move_base"-->
+          <!--output="screen"-->
+          <!--launch-prefix="xterm -e">-->
+        <!--<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />-->
 
-        <rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/move_base_params.yaml" command="load" />
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />-->
+        <!--<rosparam file="$(find explore_stack)/param/move_base_params.yaml" command="load" />-->
 
-        <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />-->
+        <!--<rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />-->
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />-->
+        <!--<rosparam file="$(find explore_stack)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />-->
 
-        <rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/local_costmap_params.yaml" command="load" />
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />-->
+        <!--<rosparam file="$(find explore_stack)/param/local_costmap_params.yaml" command="load" />-->
 
-        <rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />-->
+        <!--<rosparam file="$(find explore_stack)/param/global_costmap_params.yaml" command="load" />-->
 
 
-        <rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
+        <!--<rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />-->
+        <!--<rosparam file="$(find explore_stack)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />-->
 
-        <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
-        <remap from="odom" to="$(arg odom_topic)"/>
-    </node>
+        <!--<remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>-->
+        <!--<remap from="odom" to="$(arg odom_topic)"/>-->
+    <!--</node>-->
     <!--/ move_base -->
 
 
@@ -115,6 +118,16 @@
         <!--TODO parameters tuning if needed-->
         <!--TODO name and dir for map save-->
     <!--</include>-->
+
+    <include file="$(find explore_stack)/launch/explore_lite_revised.launch">
+        <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+        <arg name="cmd_vel_topic" default="/cmd_vel" />
+        <arg name="odom_topic" default="odom" />
+
+        <!--TODO parameters tuning if needed-->
+    <!--TODO name and dir for map save-->
+    </include>
+
     <!--<node pkg="explore_lite_revised"-->
           <!--type="explore_lite_revised"-->
           <!--name="explore_lite_revised"-->

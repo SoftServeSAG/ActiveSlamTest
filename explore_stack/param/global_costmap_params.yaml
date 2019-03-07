@@ -8,6 +8,6 @@ global_costmap:
 #  transform_tolerance: 0.5
 
 #  static_map: true
-  resolution: 1.3
+  resolution: 1.3 # FIXME find out why does not working
   footprint_padding: 0.10 # does not allow to plan within too narrow spaces
  
