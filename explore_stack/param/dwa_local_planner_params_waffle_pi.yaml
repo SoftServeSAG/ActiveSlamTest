@@ -1,4 +1,4 @@
-#DWAPlannerROS:
+DWAPlannerROS:
 
 # Robot Configuration Parameters
 #  max_vel_x: 0.26
@@ -25,7 +25,7 @@
 
 # Forward Simulation Parameters
 #  sim_time: 2.0
-#  vx_samples: 20
+  vx_samples: 3
 #  vy_samples: 0
 #  vtheta_samples: 40
 #  controller_frequency: 10.0
@@ -33,7 +33,7 @@
 # Trajectory Scoring Parameters
 #  path_distance_bias: 32.0
 #  goal_distance_bias: 20.0
-#  occdist_scale: 0.02
+  occdist_scale: 0.01
 #  forward_point_distance: 0.325
 #  stop_time_buffer: 0.2
 #  scaling_speed: 0.25
