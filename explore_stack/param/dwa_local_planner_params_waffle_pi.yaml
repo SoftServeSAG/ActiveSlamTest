@@ -16,11 +16,11 @@ DWAPlannerROS:
 
   acc_lim_x: 3.0
 #  acc_lim_y: 0.0
-  acc_lim_theta: 4.0
+  acc_lim_theta: 6.0
   prune_plan: true # also with decrease of global planning frequency
 # Goal Tolerance Parametes
-  xy_goal_tolerance: 0.1
-  yaw_goal_tolerance: 0.3
+  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.4
 #  latch_xy_goal_tolerance: false
 
 

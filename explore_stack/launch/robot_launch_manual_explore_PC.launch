@@ -5,12 +5,12 @@
     <arg name="odom_topic" default="odom" />
 
 
-    <node name="rviz"
-          pkg="rviz"
-          type="rviz"
-          respawn="true"
-          args="-d $(find explore_stack)/rviz/move_base_tuning.rviz"
-    />
+    <!--<node name="rviz_2"-->
+          <!--pkg="rviz"-->
+          <!--type="rviz"-->
+          <!--respawn="true"-->
+          <!--args="-d $(find explore_stack)/rviz/move_base_tuning.rviz"-->
+    <!--/>-->
 
 
     <!-- move_base -->

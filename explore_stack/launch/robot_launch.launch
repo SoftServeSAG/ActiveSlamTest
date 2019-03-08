@@ -7,8 +7,8 @@
     <arg name="odom_topic" default="odom" />
 
 
-    <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch">
-    </include>
+    <!--<include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch">-->
+    <!--</include>-->
 
     <!--<include file="$(find turtlebot3_navigation)/launch/move_base.launch"/>-->
 
