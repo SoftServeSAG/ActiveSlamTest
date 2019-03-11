@@ -98,8 +98,6 @@ std_msgs::ColorRGBA *red;
 std_msgs::ColorRGBA *green;
 
     visualization_msgs::Marker *default_msg_template;
-    visualization_msgs::Marker *point_msg_template;
-    visualization_msgs::Marker *figure_msg_template;
 
 
 void set_default_frontier_marker(visualization_msgs::Marker& m){
@@ -107,8 +105,6 @@ void set_default_frontier_marker(visualization_msgs::Marker& m){
   m.ns = "frontiers";
 }
 
-void get_points_marker(){}
-void set_figure_marker(){}
 
 void Explore::visualizeFrontiers(
     const std::vector<frontier_exploration::Frontier>& frontiers)
@@ -118,32 +114,30 @@ void Explore::visualizeFrontiers(
   visualization_msgs::MarkerArray markers_msg;
   std::vector<visualization_msgs::Marker>& markers = markers_msg.markers;
   visualization_msgs::Marker m;
-  set_default_frontier_marker(m);
+  m = *default_msg_template;
   m.header.frame_id = costmap_client_.getGlobalFrameID();
 
   // weighted frontiers are always sorted
   double min_cost = frontiers.empty() ? 0. : frontiers.front().cost;
 
   m.action = visualization_msgs::Marker::ADD;
-  size_t id = 0;
+  m.id = 0;
+
   for (auto& frontier : frontiers) {
+
     m.type = visualization_msgs::Marker::POINTS;
-    m.id = int(id);
+    ++m.id;
     m.pose.position = {};
     m.scale.x = 0.1;
     m.scale.y = 0.1;
     m.scale.z = 0.1;
     m.points = frontier.points;
-    if (goalOnBlacklist(frontier.centroid)) {
-      m.color = *red;
-    }
-    else {
-      m.color = *blue;
-    }
+    m.color = goalOnBlacklist(frontier.centroid) ? *red : *blue;
+    m.header.stamp = ros::Time::now();
     markers.push_back(m);
-    ++id;
+
     m.type = visualization_msgs::Marker::SPHERE;
-    m.id = int(id);
+    ++m.id;
     m.pose.position = frontier.initial;
     // scale frontier according to its cost (costier frontiers will be smaller)
     double scale = std::min(std::abs(min_cost * 0.4 / frontier.cost), 0.5);
@@ -152,15 +146,14 @@ void Explore::visualizeFrontiers(
     m.scale.z = scale;
     m.points = {};
     m.color = *green;
+    m.header.stamp = ros::Time::now();
     markers.push_back(m);
-    ++id;
   }
   size_t current_markers_count = markers.size();
 
   // delete previous markers, which are now unused
   m.action = visualization_msgs::Marker::DELETE;
-  for (; id < last_markers_count_; ++id) {
-    m.id = int(id);
+  for (; m.id < last_markers_count_; ++m.id) {
     markers.push_back(m);
   }
 
@@ -312,31 +305,17 @@ void initialize_variables(){
   green->a = 1.0;
 
   default_msg_template = new visualization_msgs::Marker();
-  default_msg_template->scale.x = 1.0;
-  default_msg_template->scale.y = 1.0;
-  default_msg_template->scale.z = 1.0;
-  default_msg_template->color.r = 0;
-  default_msg_template->color.g = 0;
-  default_msg_template->color.b = 255;
-  default_msg_template->color.a = 255;
+  default_msg_template->ns = "frontiers";
+//  default_msg_template->scale.x = 1.0;
+//  default_msg_template->scale.y = 1.0;
+//  default_msg_template->scale.z = 1.0;
+//  default_msg_template->color.r = 0;
+//  default_msg_template->color.g = 0;
+//  default_msg_template->color.b = 255;
+//  default_msg_template->color.a = 255;
   // lives forever
   default_msg_template->lifetime = ros::Duration(0);
   default_msg_template->frame_locked = true;
-
-
-  point_msg_template = new visualization_msgs::Marker();
-  point_msg_template->scale.x = 0.1;
-  point_msg_template->scale.y = 0.1;
-  point_msg_template->scale.z = 0.1;
-  point_msg_template->color = *blue;
-  point_msg_template->pose.position = {};
-
-//  point_msg_template->color.g = 0;
-//  point_msg_template->color.b = 255;
-//  point_msg_template->color.a = 255;
-  // lives forever
-  point_msg_template->lifetime = ros::Duration(0);
-  point_msg_template->frame_locked = true;
 };
 
 }  // namespace explore

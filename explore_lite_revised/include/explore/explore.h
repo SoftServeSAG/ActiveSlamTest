@@ -90,6 +90,7 @@ private:
   ros::Publisher marker_array_publisher_;
   tf::TransformListener tf_listener_;
 
+
   Costmap2DClient costmap_client_;
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>
       move_base_client_;
