@@ -12,6 +12,7 @@ DWAPlannerROS:
 #  min_trans_vel:  0.13
 
 #  max_rot_vel: 1.82
+  max_rot_vel: 1.2
 #  min_rot_vel: 0.9
 
   acc_lim_x: 3.0
@@ -20,7 +21,7 @@ DWAPlannerROS:
   prune_plan: true # also with decrease of global planning frequency
 # Goal Tolerance Parametes
   xy_goal_tolerance: 0.2
-  yaw_goal_tolerance: 0.4
+  yaw_goal_tolerance: 10 # to save hector
 #  latch_xy_goal_tolerance: false
 
 
