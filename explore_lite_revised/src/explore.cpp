@@ -50,6 +50,7 @@ inline static bool operator==(const geometry_msgs::Point& one,
 
 namespace explore
 {
+
 Explore::Explore()
   : private_nh_("~")
   , tf_listener_(ros::Duration(10.0))
@@ -92,43 +93,33 @@ Explore::~Explore()
   stop();
 }
 
+std_msgs::ColorRGBA *blue;
+std_msgs::ColorRGBA *red;
+std_msgs::ColorRGBA *green;
+
+    visualization_msgs::Marker *default_msg_template;
+    visualization_msgs::Marker *point_msg_template;
+    visualization_msgs::Marker *figure_msg_template;
+
+
+void set_default_frontier_marker(visualization_msgs::Marker& m){
+  m.header.stamp = ros::Time::now();
+  m.ns = "frontiers";
+}
+
+void get_points_marker(){}
+void set_figure_marker(){}
+
 void Explore::visualizeFrontiers(
     const std::vector<frontier_exploration::Frontier>& frontiers)
 {
-  std_msgs::ColorRGBA blue;
-  blue.r = 0;
-  blue.g = 0;
-  blue.b = 1.0;
-  blue.a = 1.0;
-  std_msgs::ColorRGBA red;
-  red.r = 1.0;
-  red.g = 0;
-  red.b = 0;
-  red.a = 1.0;
-  std_msgs::ColorRGBA green;
-  green.r = 0;
-  green.g = 1.0;
-  green.b = 0;
-  green.a = 1.0;
 
   ROS_DEBUG("visualising %lu frontiers", frontiers.size());
   visualization_msgs::MarkerArray markers_msg;
   std::vector<visualization_msgs::Marker>& markers = markers_msg.markers;
   visualization_msgs::Marker m;
-
+  set_default_frontier_marker(m);
   m.header.frame_id = costmap_client_.getGlobalFrameID();
-  m.header.stamp = ros::Time::now();
-  m.ns = "frontiers";
-  m.scale.x = 1.0;
-  m.scale.y = 1.0;
-  m.scale.z = 1.0;
-  m.color.r = 0;
-  m.color.g = 0;
-  m.color.b = 255;
-  m.color.a = 255;
-  // lives forever
-  m.lifetime = ros::Duration(0);
-  m.frame_locked = true;
 
   // weighted frontiers are always sorted
   double min_cost = frontiers.empty() ? 0. : frontiers.front().cost;
@@ -144,13 +135,14 @@ void Explore::visualizeFrontiers(
     m.scale.z = 0.1;
     m.points = frontier.points;
     if (goalOnBlacklist(frontier.centroid)) {
-      m.color = red;
-    } else {
-      m.color = blue;
+      m.color = *red;
+    }
+    else {
+      m.color = *blue;
     }
     markers.push_back(m);
     ++id;
-    m.type = visualization_msgs::Marker::ARROW;
+    m.type = visualization_msgs::Marker::SPHERE;
     m.id = int(id);
     m.pose.position = frontier.initial;
     // scale frontier according to its cost (costier frontiers will be smaller)
@@ -159,7 +151,7 @@ void Explore::visualizeFrontiers(
     m.scale.y = scale;
     m.scale.z = scale;
     m.points = {};
-    m.color = green;
+    m.color = *green;
     markers.push_back(m);
     ++id;
   }
@@ -188,6 +180,11 @@ void Explore::makePlan()
   }
 
   if (frontiers.empty()) {
+    visualization_msgs::MarkerArray empty_marker_msg;
+//    empty_marker_msg.markers
+    marker_array_publisher_.publish(empty_marker_msg);
+    visualizeFrontiers(frontiers);
+    ROS_WARN_STREAM("NO FRONTIERS LEFT, PUBLISHING EMPTY LIST");
     stop();
     return;
   }
@@ -287,16 +284,70 @@ void Explore::start()
 
 void Explore::stop()
 {
+//  marker_array_publisher_.publish();
   move_base_client_.cancelAllGoals();
   exploring_timer_.stop();
   ROS_INFO("Exploration stopped.");
 }
 
+void initialize_variables(){
+// TODO rewrite in better style with alocator
+  red = new std_msgs::ColorRGBA();
+  blue = new std_msgs::ColorRGBA();
+  green = new std_msgs::ColorRGBA();
+
+  blue->r = 0;
+  blue->g = 0;
+  blue->b = 1.0;
+  blue->a = 1.0;
+
+  red->r = 1.0;
+  red->g = 0;
+  red->b = 0;
+  red->a = 1.0;
+
+  green->r = 0;
+  green->g = 1.0;
+  green->b = 0;
+  green->a = 1.0;
+
+  default_msg_template = new visualization_msgs::Marker();
+  default_msg_template->scale.x = 1.0;
+  default_msg_template->scale.y = 1.0;
+  default_msg_template->scale.z = 1.0;
+  default_msg_template->color.r = 0;
+  default_msg_template->color.g = 0;
+  default_msg_template->color.b = 255;
+  default_msg_template->color.a = 255;
+  // lives forever
+  default_msg_template->lifetime = ros::Duration(0);
+  default_msg_template->frame_locked = true;
+
+
+  point_msg_template = new visualization_msgs::Marker();
+  point_msg_template->scale.x = 0.1;
+  point_msg_template->scale.y = 0.1;
+  point_msg_template->scale.z = 0.1;
+  point_msg_template->color = *blue;
+  point_msg_template->pose.position = {};
+
+//  point_msg_template->color.g = 0;
+//  point_msg_template->color.b = 255;
+//  point_msg_template->color.a = 255;
+  // lives forever
+  point_msg_template->lifetime = ros::Duration(0);
+  point_msg_template->frame_locked = true;
+};
+
 }  // namespace explore
+
+
+
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "explore");
+  explore::initialize_variables();
   if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME,
                                      ros::console::levels::Debug)) {
     ros::console::notifyLoggerLevelsChanged();
