@@ -9,6 +9,8 @@
 #include <explore/costmap_tools.h>
 
 #include <boost/geometry.hpp>
+#include <geometry_msgs/Vector3.h>
+#include <cmath>
 
 namespace frontier_exploration
 {
@@ -27,8 +29,8 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
 }
 
     std::pair<geometry_msgs::Point, geometry_msgs::Point> FrontierSearch::getFrontierEdges(Frontier &fr, geometry_msgs::Point &reference_robot){
-      ROS_ERROR_STREAM("GOT REFERENCE POINT ["  <<  reference_robot.x << ":"<< reference_robot.y  << "]");
-      ROS_ERROR_STREAM("GOT CENTROID POINT ["  <<  fr.centroid.x << ":"<< fr.centroid.y  << "]");
+//      ROS_ERROR_STREAM("GOT REFERENCE POINT ["  <<  reference_robot.x << ":"<< reference_robot.y  << "]");
+//      ROS_ERROR_STREAM("GOT CENTROID POINT ["  <<  fr.centroid.x << ":"<< fr.centroid.y  << "]");
         double max_dist = 0.0;
         double heuristics_dist {0.0};
         geometry_msgs::Point p1, p2;
@@ -124,6 +126,21 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
   return frontier_list;
 }
 
+
+double getDegreesDistance(geometry_msgs::Point p1,geometry_msgs::Point p2,geometry_msgs::Point reference){
+    // using vector dotproduct to get angle between two reference points v_A dot v_B == |v_A| * |v_B| * cos(angle(A^B))
+    double v1_x{p1.x - reference.x},
+    v1_y{p1.y - reference.y},
+    v2_x{p2.x - reference.x},
+    v2_y{p2.y - reference.y},
+    len_v1 = std::hypot(v1_x, v1_y),
+    len_v2 = std::hypot(v2_x, v2_y);
+    double dot_prod = v1_x * v2_x + v1_y * v2_y;
+    double angle = std::acos(dot_prod / (len_v1 * len_v2)) * 180.0 / M_PI;
+    return angle;
+}
+
+
 Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
                                           unsigned int reference,
                                           std::vector<bool>& frontier_flag)
@@ -198,7 +215,11 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
 
   output.centroid.x /= output.size;
   output.centroid.y /= output.size;
+  /*KD*/
   output.interpolated_line = getFrontierEdges(output, reference_robot_pose);
+  ROS_ERROR_STREAM("distance in degrees = " << getDegreesDistance(output.interpolated_line.first, output.interpolated_line.second, reference_robot_pose));
+  // next splitting onto pieces while they are more then 10deg from robots perspective
+
   return output;
 }
 

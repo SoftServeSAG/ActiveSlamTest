@@ -120,8 +120,16 @@ void Explore::visualizeFrontiers(
   // weighted frontiers are always sorted
   double min_cost = frontiers.empty() ? 0. : frontiers.front().cost;
 
-  m.action = visualization_msgs::Marker::ADD;
+
   m.id = 0;
+
+  m.action = visualization_msgs::Marker::DELETEALL;
+  markers.push_back(m);
+  ++m.id;
+  m.action = visualization_msgs::Marker::ADD;
+//  for (; m.id < last_markers_count_; ++m.id) {
+//    markers.push_back(m);
+//  }
 
   for (auto& frontier : frontiers) {
 
@@ -174,10 +182,10 @@ void Explore::visualizeFrontiers(
   size_t current_markers_count = markers.size();
 
   // delete previous markers, which are now unused
-  m.action = visualization_msgs::Marker::DELETE;
-  for (; m.id < last_markers_count_; ++m.id) {
-    markers.push_back(m);
-  }
+//  m.action = visualization_msgs::Marker::DELETE;
+//  for (; m.id < last_markers_count_; ++m.id) {
+//    markers.push_back(m);
+//  }
 
   last_markers_count_ = current_markers_count;
   marker_array_publisher_.publish(markers_msg);
@@ -337,7 +345,7 @@ void initialize_variables(){
 //  default_msg_template->color.a = 255;
   // lives forever
   default_msg_template->lifetime = ros::Duration(0);
-  default_msg_template->frame_locked = true;
+  default_msg_template->frame_locked = false;
 };
 
 }  // namespace explore
