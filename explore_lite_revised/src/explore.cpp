@@ -148,6 +148,28 @@ void Explore::visualizeFrontiers(
     m.color = *green;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
+
+    m.type = visualization_msgs::Marker::SPHERE;
+    ++m.id;
+    m.pose.position = frontier.interpolated_line.first;
+    m.scale.x = 0.1;
+    m.scale.y = 0.1;
+    m.scale.z = 0.2;
+    m.points = {};
+    m.color = *red;
+    m.header.stamp = ros::Time::now();
+    markers.push_back(m);
+
+    ++m.id;
+    m.pose.position = frontier.interpolated_line.second;
+    m.scale.x = 0.1;
+    m.scale.y = 0.1;
+    m.scale.z = 0.2;
+    m.points = {};
+    m.color = *red;
+    m.header.stamp = ros::Time::now();
+    markers.push_back(m);
+
   }
   size_t current_markers_count = markers.size();
 

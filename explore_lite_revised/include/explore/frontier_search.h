@@ -16,6 +16,7 @@ struct Frontier {
   geometry_msgs::Point initial;
   geometry_msgs::Point centroid;
   geometry_msgs::Point middle;
+  std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
   std::vector<geometry_msgs::Point> points;
 };
 
@@ -45,6 +46,10 @@ public:
   std::vector<Frontier> searchFrom(geometry_msgs::Point position);
 
 protected:
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> getFrontierEdges(Frontier &fr, geometry_msgs::Point &reference_robot);
+
+
+
   /**
    * @brief Starting from an initial cell, build a frontier from valid adjacent
    * cells

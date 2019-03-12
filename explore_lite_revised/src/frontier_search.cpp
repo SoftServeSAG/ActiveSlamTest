@@ -8,6 +8,8 @@
 
 #include <explore/costmap_tools.h>
 
+#include <boost/geometry.hpp>
+
 namespace frontier_exploration
 {
 using costmap_2d::LETHAL_OBSTACLE;
@@ -23,6 +25,31 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
   , min_frontier_size_(min_frontier_size)
 {
 }
+
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> FrontierSearch::getFrontierEdges(Frontier &fr, geometry_msgs::Point &reference_robot){
+      ROS_ERROR_STREAM("GOT REFERENCE POINT ["  <<  reference_robot.x << ":"<< reference_robot.y  << "]");
+      ROS_ERROR_STREAM("GOT CENTROID POINT ["  <<  fr.centroid.x << ":"<< fr.centroid.y  << "]");
+        double max_dist = 0.0;
+        double centroid_dist{0.0}, point_point_dist{0.0};
+        geometry_msgs::Point p1, p2;
+      for (auto &point: fr.points){
+          centroid_dist = std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y);
+          if (centroid_dist > max_dist){
+              max_dist = centroid_dist;
+              p1 = point;
+          }
+      }
+      max_dist = 0.0;
+       for (auto &point: fr.points){
+            centroid_dist = std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y);
+            point_point_dist =  std::hypot(point.x - p1.x , point.y - p1.y);
+            if (centroid_dist + point_point_dist> max_dist){
+                max_dist = centroid_dist + point_point_dist;
+                p2 = point;
+            }
+        }
+      return {p1, p2};
+    }
 
 std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
 {
@@ -119,7 +146,9 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
   double reference_x, reference_y;
   costmap_->indexToCells(reference, rx, ry);
   costmap_->mapToWorld(rx, ry, reference_x, reference_y);
-
+  geometry_msgs::Point reference_robot_pose;
+  reference_robot_pose.x = reference_x;
+  reference_robot_pose.y = reference_y;
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
     bfs.pop();
@@ -149,8 +178,7 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
 
         // determine frontier's distance from robot, going by closest gridcell
         // to robot
-        double distance = sqrt(pow((double(reference_x) - double(wx)), 2.0) +
-                               pow((double(reference_y) - double(wy)), 2.0));
+        double distance = std::hypot(reference_x - wx, reference_x - wx);
         if (distance < output.min_distance) {
           output.min_distance = distance;
           output.middle.x = wx;
@@ -164,10 +192,14 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
   }
 
   // average out frontier centroid
+
   output.centroid.x /= output.size;
   output.centroid.y /= output.size;
+  output.interpolated_line = getFrontierEdges(output, reference_robot_pose);
   return output;
 }
+
+
 
 bool FrontierSearch::isNewFrontierCell(unsigned int idx,
                                        const std::vector<bool>& frontier_flag)
@@ -194,4 +226,5 @@ double FrontierSearch::frontierCost(const Frontier& frontier)
           costmap_->getResolution()) -
          (gain_scale_ * frontier.size * costmap_->getResolution());
 }
+
 }
