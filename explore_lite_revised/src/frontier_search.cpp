@@ -30,21 +30,24 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
       ROS_ERROR_STREAM("GOT REFERENCE POINT ["  <<  reference_robot.x << ":"<< reference_robot.y  << "]");
       ROS_ERROR_STREAM("GOT CENTROID POINT ["  <<  fr.centroid.x << ":"<< fr.centroid.y  << "]");
         double max_dist = 0.0;
-        double centroid_dist{0.0}, point_point_dist{0.0};
+        double heuristics_dist {0.0};
         geometry_msgs::Point p1, p2;
       for (auto &point: fr.points){
-          centroid_dist = std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y);
-          if (centroid_dist > max_dist){
-              max_dist = centroid_dist;
+          heuristics_dist =
+                  std::hypot(point.x - reference_robot.x , point.y - reference_robot.y) +  /* robot_point_dist */
+                  std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y); /* centroid_point dist */
+          if (heuristics_dist > max_dist){
+              max_dist = heuristics_dist;
               p1 = point;
           }
       }
       max_dist = 0.0;
        for (auto &point: fr.points){
-            centroid_dist = std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y);
-            point_point_dist =  std::hypot(point.x - p1.x , point.y - p1.y);
-            if (centroid_dist + point_point_dist> max_dist){
-                max_dist = centroid_dist + point_point_dist;
+           heuristics_dist =
+                   std::hypot(point.x - p1.x , point.y - p1.y) +  /*  point-point dist */
+                   std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y); /* centroid_point dist */
+            if (heuristics_dist > max_dist){
+                max_dist = heuristics_dist;
                 p2 = point;
             }
         }

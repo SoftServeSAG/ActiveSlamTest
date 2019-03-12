@@ -149,23 +149,23 @@ void Explore::visualizeFrontiers(
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
 
-    m.type = visualization_msgs::Marker::SPHERE;
+    m.type = visualization_msgs::Marker::LINE_STRIP;
     ++m.id;
-    m.pose.position = frontier.interpolated_line.first;
+    m.pose.position = {};
     m.scale.x = 0.1;
     m.scale.y = 0.1;
-    m.scale.z = 0.2;
-    m.points = {};
+    m.scale.z = 0.1;
+    m.points = {frontier.interpolated_line.first, frontier.centroid};
     m.color = *red;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
 
     ++m.id;
-    m.pose.position = frontier.interpolated_line.second;
+    m.pose.position = {};
     m.scale.x = 0.1;
     m.scale.y = 0.1;
-    m.scale.z = 0.2;
-    m.points = {};
+    m.scale.z = 0.1;
+    m.points = {frontier.interpolated_line.second, frontier.centroid};
     m.color = *red;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
