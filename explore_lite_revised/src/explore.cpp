@@ -99,7 +99,7 @@ std_msgs::ColorRGBA *green;
 
     visualization_msgs::Marker *default_msg_template;
 
-
+// todo consicer cleanup
 void set_default_frontier_marker(visualization_msgs::Marker& m){
   m.header.stamp = ros::Time::now();
   m.ns = "frontiers";
@@ -132,7 +132,7 @@ void Explore::visualizeFrontiers(
 //  }
 // TODO when the work on visualisation will stabilize, make a separate functuion or even subpackage for it
   for (auto& frontier : frontiers) {
-
+    m.header.frame_id = costmap_client_.getGlobalFrameID();
     m.type = visualization_msgs::Marker::POINTS;
     ++m.id;
     m.pose.position = {};
@@ -144,18 +144,18 @@ void Explore::visualizeFrontiers(
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
 
-    m.type = visualization_msgs::Marker::SPHERE;
-    ++m.id;
-    m.pose.position = frontier.initial;
-    // scale frontier according to its cost (costier frontiers will be smaller)
-    double scale = std::min(std::abs(min_cost * 0.4 / frontier.cost), 0.5);
-    m.scale.x = scale;
-    m.scale.y = scale;
-    m.scale.z = scale;
-    m.points = {};
-    m.color = *green;
-    m.header.stamp = ros::Time::now();
-    markers.push_back(m);
+//    m.type = visualization_msgs::Marker::SPHERE;
+//    ++m.id;
+//    m.pose.position = frontier.initial;
+//    // scale frontier according to its cost (costier frontiers will be smaller)
+//    double scale = std::min(std::abs(min_cost * 0.4 / frontier.cost), 0.5);
+//    m.scale.x = scale;
+//    m.scale.y = scale;
+//    m.scale.z = scale;
+//    m.points = {};
+//    m.color = *green;
+//    m.header.stamp = ros::Time::now();
+//    markers.push_back(m);
 
       m.type = visualization_msgs::Marker::SPHERE_LIST;
       ++m.id;
@@ -201,6 +201,42 @@ void Explore::visualizeFrontiers(
     m.color = *red;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
+
+    m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    ++m.id;
+    m.text = "F";
+    m.pose.position = frontier.interpolated_line.first;
+    m.scale.x = 0.2;
+    m.scale.y = 0.2;
+    m.scale.z = 0.2;
+    m.points = {};
+    m.color = *blue;
+    m.header.stamp = ros::Time::now();
+    markers.push_back(m);
+    m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    ++m.id;
+    m.text = "M";
+    m.pose.position = frontier.centroid;
+    m.scale.x = 0.2;
+    m.scale.y = 0.2;
+    m.scale.z = 0.2;
+    m.points = {};
+    m.color = *blue;
+    m.header.stamp = ros::Time::now();
+    markers.push_back(m);
+    m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    ++m.id;
+    m.text = "L";
+    m.pose.position = frontier.interpolated_line.second;
+    m.scale.x = 0.2;
+    m.scale.y = 0.2;
+    m.scale.z = 0.2;
+    m.points = {};
+    m.color = *blue;
+    m.header.stamp = ros::Time::now();
+    markers.push_back(m);
+
+
 //
 //    ++m.id;
 //    m.pose.position = {};
@@ -212,7 +248,46 @@ void Explore::visualizeFrontiers(
 //    m.header.stamp = ros::Time::now();
 //    markers.push_back(m);
 
+    m.type = visualization_msgs::Marker::POINTS;
+//    m.header.frame_id = costmap_client_.getBaseFrameID();
+    ++m.id;
+    m.pose.position = {};
+    m.scale.x = 0.3;
+    m.scale.y = 0.3;
+    m.scale.z = 0.3;
+//    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
+    ROS_ERROR_STREAM("ref: " << frontier.points[0] <<  frontier.points[1] << frontier.points[2] );
+    ROS_ERROR_STREAM("map_points: " << frontier.vectors_to_points[0] <<  frontier.vectors_to_points[1] << frontier.vectors_to_points[2] );
+//    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
+//    ROS_ERROR_STREAM(frontier.points.size());
+    m.points = frontier.vectors_to_points;
+    m.color = *green;
+    m.header.stamp = ros::Time::now();
+    markers.push_back(m);
+
+
+//    for (size_t p_ind = 0; p_ind < frontier.vectors_to_points.size(); ++p_ind){
+//      m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+////    m.header.frame_id = costmap_client_.getBaseFrameID();
+//      ++m.id;
+//      m.pose.position = frontier.vectors_to_points[p_ind];
+//      m.text = std::to_string(p_ind);
+//      m.scale.x = 0.3;
+//      m.scale.y = 0.3;
+//      m.scale.z = 0.3;
+////    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
+//      ROS_ERROR_STREAM("ref: " << frontier.points[0] <<  frontier.points[1] << frontier.points[2] );
+//      ROS_ERROR_STREAM("map_points: " << frontier.vectors_to_points[0] <<  frontier.vectors_to_points[1] << frontier.vectors_to_points[2] );
+////    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
+////    ROS_ERROR_STREAM(frontier.points.size());
+//      m.points = frontier.vectors_to_points;
+//      m.color = *red;
+//      m.header.stamp = ros::Time::now();
+//      markers.push_back(m);
+//    }
+
   }
+
   size_t current_markers_count = markers.size();
 
   // delete previous markers, which are now unused

@@ -18,6 +18,7 @@ struct Frontier {
   geometry_msgs::Point middle;
   std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
   std::vector<geometry_msgs::Point> points;
+  std::vector<geometry_msgs::Point> vectors_to_points;
 };
 
 /**
@@ -46,7 +47,10 @@ public:
   std::vector<Frontier> searchFrom(geometry_msgs::Point position);
 
 protected:
-    std::pair<geometry_msgs::Point, geometry_msgs::Point> getFrontierEdges(Frontier &fr, geometry_msgs::Point &reference_robot);
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierPlanarFarthest(Frontier &fr,
+                                                                                       geometry_msgs::Point &reference_robot);
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierViewAngle(Frontier &fr,
+                                                                                         geometry_msgs::Point &reference_robot);
 
 
 
@@ -59,8 +63,8 @@ protected:
    * as frontiers
    * @return new frontier
    */
-  Frontier buildNewFrontier(unsigned int initial_cell, unsigned int reference,
-                            std::vector<bool>& frontier_flag);
+  std::vector<Frontier> buildNewFrontier(unsigned int initial_cell, unsigned int reference,
+                                         std::vector<bool> &frontier_flag);
 
   /**
    * @brief isNewFrontierCell Evaluate if candidate cell is a valid candidate

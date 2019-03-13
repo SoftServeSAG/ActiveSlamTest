@@ -28,9 +28,8 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
 {
 }
 
-    std::pair<geometry_msgs::Point, geometry_msgs::Point> FrontierSearch::getFrontierEdges(Frontier &fr, geometry_msgs::Point &reference_robot){
-//      ROS_ERROR_STREAM("GOT REFERENCE POINT ["  <<  reference_robot.x << ":"<< reference_robot.y  << "]");
-//      ROS_ERROR_STREAM("GOT CENTROID POINT ["  <<  fr.centroid.x << ":"<< fr.centroid.y  << "]");
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> FrontierSearch::approxFrontierPlanarFarthest(Frontier &fr,
+                                                                                                       geometry_msgs::Point &reference_robot){
         double max_dist = 0.0;
         double heuristics_dist {0.0};
         geometry_msgs::Point p1, p2;
@@ -53,9 +52,46 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
                 p2 = point;
             }
         }
-      return {p1, p2};
+        return {p1, p2};
+}
+
+
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> FrontierSearch::approximateFrontierViewAngle(
+            frontier_exploration::Frontier &fr, geometry_msgs::Point &reference_robot) {
+        geometry_msgs::Point p1, p2;
+        if (!fr.vectors_to_points.empty()){
+            p1.x = fr.vectors_to_points.front().x + reference_robot.x;
+            p1.y = fr.vectors_to_points.front().y + reference_robot.y;
+            p2.x = fr.vectors_to_points.back().x + reference_robot.x;
+            p2.y = fr.vectors_to_points.back().y + reference_robot.y;
+            ROS_DEBUG_STREAM( " should " <<  fr.vectors_to_points.front() << fr.vectors_to_points.back());
+        } // else default zero values
+        return {p1, p2};
     }
 
+    std::vector<Frontier> splitFrontier(Frontier& fr, geometry_msgs::Point reference_robot_pose){
+    Frontier fr1, fr2;
+    assert(!fr.vectors_to_points.empty() > 0);
+    size_t fr1_pts_number = fr.vectors_to_points.size() / 2;
+    // TODO remove it, while for backward compatibility
+        fr1.points = fr.points;
+        fr2.points = fr.points;
+//        fr1.min_distance
+    fr1.vectors_to_points = std::vector<geometry_msgs::Point>(fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + fr1_pts_number);
+    fr1.interpolated_line = {fr.interpolated_line.first, fr.middle};
+    fr1.centroid = fr1.vectors_to_points[fr1.vectors_to_points.size() / 2];
+    fr1.centroid.x += reference_robot_pose.x;
+    fr1.centroid.y += reference_robot_pose.y;
+
+
+    fr2.vectors_to_points = std::vector<geometry_msgs::Point>( fr.vectors_to_points.begin() + fr1_pts_number,  fr.vectors_to_points.end());
+    fr2.interpolated_line = {fr.middle, fr.interpolated_line.second};
+    fr2.centroid = fr2.vectors_to_points[fr2.vectors_to_points.size() / 2];
+        fr2.centroid.x += reference_robot_pose.x;
+        fr2.centroid.y += reference_robot_pose.y;
+
+    return {fr1, fr2};
+}
 std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
 {
   std::vector<Frontier> frontier_list;
@@ -106,10 +142,11 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
         // neighbour)
       } else if (isNewFrontierCell(nbr, frontier_flag)) {
         frontier_flag[nbr] = true;
-        Frontier new_frontier = buildNewFrontier(nbr, pos, frontier_flag);
-        if (new_frontier.size * costmap_->getResolution() >=
-            min_frontier_size_) {
-          frontier_list.push_back(new_frontier);
+        std::vector<Frontier> new_frontiers = buildNewFrontier(nbr, pos, frontier_flag);
+        for (auto &new_frontier: new_frontiers){
+            if (new_frontier.size * costmap_->getResolution() >= min_frontier_size_) {
+                frontier_list.push_back(new_frontier);
+            }
         }
       }
     }
@@ -141,9 +178,14 @@ double getDegreesDistance(geometry_msgs::Point p1,geometry_msgs::Point p2,geomet
 }
 
 
-Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
-                                          unsigned int reference,
-                                          std::vector<bool>& frontier_flag)
+bool cmp_by_angle(geometry_msgs::Point p1, geometry_msgs::Point p2){
+    return atan2(p1.y, p1.x) < atan2(p2.y, p2.x);
+}
+
+
+std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell,
+                                                       unsigned int reference,
+                                                       std::vector<bool> &frontier_flag)
 {
   // initialize frontier structure
   Frontier output;
@@ -155,7 +197,11 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
   // record initial contact point for frontier
   unsigned int ix, iy;
   costmap_->indexToCells(initial_cell, ix, iy);
+  ROS_ERROR_STREAM(ix << "   ---   "  << iy);
+
   costmap_->mapToWorld(ix, iy, output.initial.x, output.initial.y);
+
+    ROS_ERROR_STREAM(output.initial.x << "   ---   "  << output.initial.y);
 
   // push initial gridcell onto queue
   std::queue<unsigned int> bfs;
@@ -169,10 +215,16 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
   geometry_msgs::Point reference_robot_pose;
   reference_robot_pose.x = reference_x;
   reference_robot_pose.y = reference_y;
+
+//  ROS_ERROR_STREAM( reference_robot_pose.x << "   " << reference_robot_pose.y);
+// TODO make a parameter
+size_t choose_each = 6;
+
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
     bfs.pop();
-
+    double world_scale_X =  costmap_->getSizeInMetersX();
+    double world_scale_Y =  costmap_->getSizeInMetersY();
     // try adding cells in 8-connected neighborhood to frontier
     for (unsigned int nbr : nhood8(idx, *costmap_)) {
       // check if neighbour is a potential frontier cell
@@ -184,13 +236,23 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
         costmap_->indexToCells(nbr, mx, my);
         costmap_->mapToWorld(mx, my, wx, wy);
 
+        // selecting sparce points
+        if (output.points.size() % choose_each == 0){
+            geometry_msgs::Point reference_scope_point;
+            reference_scope_point.x = wx - reference_x;
+            reference_scope_point.y = wy - reference_y;
+            output.vectors_to_points.push_back(reference_scope_point);
+        }
+
+//        costmap_.
+
         geometry_msgs::Point point;
         point.x = wx;
         point.y = wy;
         output.points.push_back(point);
 
         // update frontier size
-        output.size++;
+        output.size++; // FIXME R U SRIOS!?
 
         // update centroid of frontier
         output.centroid.x += wx;
@@ -198,7 +260,7 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
 
         // determine frontier's distance from robot, going by closest gridcell
         // to robot
-        double distance = std::hypot(reference_x - wx, reference_x - wx);
+        double distance = std::hypot(reference_x - wx, reference_y - wy);
         if (distance < output.min_distance) {
           output.min_distance = distance;
           output.middle.x = wx;
@@ -211,21 +273,51 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
     }
   }
 
+//  output.min_distance = std::hypot(reference_x - output.middle.x, reference_y - output.middle.y);
   // average out frontier centroid
 
   output.centroid.x /= output.size;
   output.centroid.y /= output.size;
   /*KD*/
-  output.interpolated_line = getFrontierEdges(output, reference_robot_pose);
-  double degrees_distance =  getDegreesDistance(output.interpolated_line.first, output.interpolated_line.second, reference_robot_pose);
-    if (degrees_distance > 10.0){
 
+//  todo doit with lambda
+  std::sort(output.vectors_to_points.begin(), output.vectors_to_points.end(), cmp_by_angle);
+
+  // fixme find out why there are occuring empty frontiers (empty raw points)
+//  ROS_WARN_STREAM(output.vectors_to_points.size() << "  VEC LENGTH");
+//  if (output.vectors_to_points.size() > 0)
+//      ROS_WARN_STREAM(output.vectors_to_points.front() << "  VEC LENGTH" << output.vectors_to_points.back());
+//  else
+//      ROS_WARN_STREAM(output.points.size() << "  FULL LENGTH ");
+  output.interpolated_line = approximateFrontierViewAngle(output, reference_robot_pose);
+
+
+// angular distance for vectors
+// TODO move to approppriate frontier
+if (!output.vectors_to_points.empty()){
+    double degrees_distance =  std::abs( atan2(output.interpolated_line.first.y, output.interpolated_line.first.x) - atan2(output.interpolated_line.second.y, output.interpolated_line.second.x) )
+            * 180.0 / M_PI;
+    getDegreesDistance(output.interpolated_line.first, output.interpolated_line.second, reference_robot_pose);
+
+    if (degrees_distance > 10.0){
+        ROS_WARN_STREAM("Detected too wide frontier, " << degrees_distance << "splitting on two");
+
+        auto splitted = splitFrontier(output, reference_robot_pose);
+        for (auto &fr: splitted){
+            degrees_distance =  std::abs( atan2(fr.interpolated_line.first.y, fr.interpolated_line.first.x) - atan2(fr.interpolated_line.second.y, fr.interpolated_line.second.x) )
+                    * 180.0 / M_PI;
+
+            ROS_WARN_STREAM("Ner frontier, " << degrees_distance);
+        }
+        return splitted;
     }
+}
 
   ROS_ERROR_STREAM("distance in degrees = " << getDegreesDistance(output.interpolated_line.first, output.interpolated_line.second, reference_robot_pose));
   // next splitting onto pieces while they are more then 10deg from robots perspective
 
-  return output;
+
+  return {output};
 }
 
 
@@ -251,9 +343,15 @@ bool FrontierSearch::isNewFrontierCell(unsigned int idx,
 
 double FrontierSearch::frontierCost(const Frontier& frontier)
 {
-  return (potential_scale_ * frontier.min_distance *
-          costmap_->getResolution()) -
-         (gain_scale_ * frontier.size * costmap_->getResolution());
+  return (potential_scale_ * frontier.min_distance
+  // * costmap_->getResolution()
+          )
+          -
+         (gain_scale_
+         /*KD*/ * frontier.vectors_to_points.size()
+         // * frontier.size
+        // * costmap_->getResolution()
+         );
 }
 
 }
