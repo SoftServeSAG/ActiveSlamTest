@@ -130,7 +130,7 @@ void Explore::visualizeFrontiers(
 //  for (; m.id < last_markers_count_; ++m.id) {
 //    markers.push_back(m);
 //  }
-
+// TODO when the work on visualisation will stabilize, make a separate functuion or even subpackage for it
   for (auto& frontier : frontiers) {
 
     m.type = visualization_msgs::Marker::POINTS;
@@ -157,26 +157,60 @@ void Explore::visualizeFrontiers(
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
 
-    m.type = visualization_msgs::Marker::LINE_STRIP;
-    ++m.id;
-    m.pose.position = {};
-    m.scale.x = 0.1;
-    m.scale.y = 0.1;
-    m.scale.z = 0.1;
-    m.points = {frontier.interpolated_line.first, frontier.centroid};
-    m.color = *red;
-    m.header.stamp = ros::Time::now();
-    markers.push_back(m);
+      m.type = visualization_msgs::Marker::SPHERE_LIST;
+      ++m.id;
+      m.pose.position = {};
+      m.scale.x = 0.2;
+      m.scale.y = 0.2;
+      m.scale.z = 0.2;
+      m.points = {frontier.interpolated_line.first, frontier.centroid, frontier.interpolated_line.second};
+      m.color = *red;
+      m.header.stamp = ros::Time::now();
+      markers.push_back(m);
 
+
+//      m.type = visualization_msgs::Marker::SPHERE;
+//      ++m.id;
+//      m.pose.position = frontier.interpolated_line.first;
+//      m.scale.x = 0.2;
+//      m.scale.y = 0.2;
+//      m.scale.z = 0.2;
+//      m.points = {};
+//      m.color = *red;
+//      m.header.stamp = ros::Time::now();
+//      markers.push_back(m);
+//
+//      m.type = visualization_msgs::Marker::SPHERE;
+//      ++m.id;
+//      m.pose.position = frontier.interpolated_line.second;
+//      m.scale.x = 0.2;
+//      m.scale.y = 0.2;
+//      m.scale.z = 0.2;
+//      m.points = {};
+//      m.color = *red;
+//      m.header.stamp = ros::Time::now();
+//      markers.push_back(m);
+
+      m.type = visualization_msgs::Marker::LINE_STRIP;
     ++m.id;
     m.pose.position = {};
     m.scale.x = 0.1;
     m.scale.y = 0.1;
     m.scale.z = 0.1;
-    m.points = {frontier.interpolated_line.second, frontier.centroid};
+    m.points = {frontier.interpolated_line.first, frontier.centroid, frontier.interpolated_line.second};
     m.color = *red;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
+//
+//    ++m.id;
+//    m.pose.position = {};
+//    m.scale.x = 0.1;
+//    m.scale.y = 0.1;
+//    m.scale.z = 0.1;
+//    m.points = {frontier.interpolated_line.second, frontier.centroid};
+//    m.color = *red;
+//    m.header.stamp = ros::Time::now();
+//    markers.push_back(m);
 
   }
   size_t current_markers_count = markers.size();

@@ -217,6 +217,11 @@ Frontier FrontierSearch::buildNewFrontier(unsigned int initial_cell,
   output.centroid.y /= output.size;
   /*KD*/
   output.interpolated_line = getFrontierEdges(output, reference_robot_pose);
+  double degrees_distance =  getDegreesDistance(output.interpolated_line.first, output.interpolated_line.second, reference_robot_pose);
+    if (degrees_distance > 10.0){
+
+    }
+
   ROS_ERROR_STREAM("distance in degrees = " << getDegreesDistance(output.interpolated_line.first, output.interpolated_line.second, reference_robot_pose));
   // next splitting onto pieces while they are more then 10deg from robots perspective
 
