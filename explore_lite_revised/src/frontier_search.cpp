@@ -30,8 +30,12 @@ inline double angular_vector_distance(const geometry_msgs::Point &p1,const  geom
     return angular_vector_distance(p1.x - reference_pt.x, p1.y - reference_pt.y, p2.x - reference_pt.x, p2.y - reference_pt.y);
 }
 
-inline bool cmp_by_angle(const geometry_msgs::Point &p1,const  geometry_msgs::Point &p2) {
-    return atan2(p1.y, p1.x) < atan2(p2.y, p2.x);
+// for now is not used
+inline geometry_msgs::Point getClosestPointTo(const std::vector<geometry_msgs::Point> &distance_vectors, const geometry_msgs::Point &goal){
+    auto min_elem_iter = std::min_element(distance_vectors.begin(), distance_vectors.end(),
+            [](const geometry_msgs::Point &p1,const geometry_msgs::Point &p2)
+    {return p1.x + p1.y < p2.x + p2.y;}); //using Manhatten distance
+    return *min_elem_iter;
 }
 
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
@@ -85,26 +89,30 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
     }
 
     std::vector<Frontier> splitFrontier(Frontier& fr){
-    Frontier fr1(fr), fr2(fr);
-    size_t fr1_pts_number = fr.vectors_to_points.size() / 2;
-    fr1.vectors_to_points = std::vector<geometry_msgs::Point>(fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + fr1_pts_number);
-    fr1.interpolated_line = {fr.interpolated_line.first, fr.centroid};
-    fr1.centroid = fr1.vectors_to_points[fr1.vectors_to_points.size() / 2]; // not true centroid, but who cares...
+        Frontier fr1, fr2;
 
-    // moving from relative vector to absolute coordinates
-    fr1.centroid.x += fr.reference_robot_pose.x;
-    fr1.centroid.y += fr.reference_robot_pose.y;
+        fr1.reference_robot_pose = fr.reference_robot_pose;
+        fr2.reference_robot_pose = fr.reference_robot_pose;
+        size_t fr1_pts_number = fr.vectors_to_points.size() / 2;
 
+        fr1.vectors_to_points = std::vector<geometry_msgs::Point>(fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + fr1_pts_number);
+        fr1.interpolated_line = {fr.interpolated_line.first, fr.centroid};
+        fr1.centroid = fr1.vectors_to_points[fr1.vectors_to_points.size() / 2]; // not true centroid, but who cares... //todo maybe
 
-    fr2.vectors_to_points = std::vector<geometry_msgs::Point>( fr.vectors_to_points.begin() + fr1_pts_number,  fr.vectors_to_points.end());
-    fr2.interpolated_line = {fr.centroid, fr.interpolated_line.second};
-    fr2.centroid = fr2.vectors_to_points[fr2.vectors_to_points.size() / 2];
+        // moving from relative vector to absolute coordinates
+        fr1.centroid.x += fr.reference_robot_pose.x;
+        fr1.centroid.y += fr.reference_robot_pose.y;
+
+        fr2.vectors_to_points = std::vector<geometry_msgs::Point>( fr.vectors_to_points.begin() + fr1_pts_number,  fr.vectors_to_points.end());
+        fr2.interpolated_line = {fr.centroid, fr.interpolated_line.second};
+        fr2.centroid = fr2.vectors_to_points[fr2.vectors_to_points.size() / 2];
+
         fr2.centroid.x += fr.reference_robot_pose.x;
         fr2.centroid.y += fr.reference_robot_pose.y;
-        fr1.closest_point = fr1.centroid; // todo change it to closest if needed
-        fr2.closest_point = fr2.centroid; // todo change it to closest if needed
+
         std::vector<Frontier> frontiers{fr1, fr2}, vector_buf, res;
         for (auto& fr: frontiers){
+
             double fr_angular_dist = angular_vector_distance(fr.interpolated_line.first, fr.interpolated_line.second);
             ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << fr1.vectors_to_points.size() << "] PTS");
             if (fr_angular_dist > fr.max_frontier_angular_size
@@ -268,11 +276,11 @@ size_t choose_each{1}, cntr{0};
         // determine frontier's distance from robot, going by closest gridcell
         // to robot
         double distance = std::hypot(reference_x - wx, reference_y - wy);
-        if (distance < output.min_distance) {
-          output.min_distance = distance;
-          output.closest_point.x = wx;
-          output.closest_point.y = wy;
-        }
+//        if (distance < output.min_distance) {
+//          output.min_distance = distance;
+//          output.closest_point.x = wx;
+//          output.closest_point.y = wy;
+//        }
 
         // add to queue for breadth first search
         bfs.push(nbr);
@@ -288,8 +296,10 @@ size_t choose_each{1}, cntr{0};
   output.centroid.y /= output.vectors_to_points.size();
   /*KD*/
 
-//  todo doit with lambda
-  std::sort(output.vectors_to_points.begin(), output.vectors_to_points.end(), cmp_by_angle);
+  std::sort(output.vectors_to_points.begin(), output.vectors_to_points.end(),
+          [](const geometry_msgs::Point &p1,const  geometry_msgs::Point &p2)
+          {return atan2(p1.y, p1.x) < atan2(p2.y, p2.x);}
+          );
 
   // fixme find out why there are occuring empty frontiers (empty raw points)
   output.interpolated_line = approximateFrontierByViewAngle(output);

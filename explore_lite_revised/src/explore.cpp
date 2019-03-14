@@ -169,6 +169,7 @@ void Explore::visualizeFrontiers(
     m.color = *blue;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
+
     m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     ++m.id;
     m.text = "M";
@@ -180,6 +181,7 @@ void Explore::visualizeFrontiers(
     m.color = *blue;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
+
     m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     ++m.id;
     m.text = "L";
@@ -191,7 +193,6 @@ void Explore::visualizeFrontiers(
     m.color = *blue;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
-
 
     m.type = visualization_msgs::Marker::POINTS;
     ++m.id;
