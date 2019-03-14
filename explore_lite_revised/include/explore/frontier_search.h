@@ -48,9 +48,9 @@ public:
   std::vector<Frontier> searchFrom(geometry_msgs::Point position);
 
 protected:
-    std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierPlanarFarthest(Frontier &fr,
-                                                                                       geometry_msgs::Point &reference_robot);
-    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierViewAngle(Frontier &fr);
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(Frontier &fr,
+                                                                                         geometry_msgs::Point &reference_robot);
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierByViewAngle(Frontier &fr);
 
 
 
