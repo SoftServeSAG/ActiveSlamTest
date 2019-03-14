@@ -85,9 +85,7 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
     }
 
     std::vector<Frontier> splitFrontier(Frontier& fr){
-//        ROS_WARN_STREAM(0);
     Frontier fr1(fr), fr2(fr);
-//    assert(!fr.vectors_to_points.empty() > 0);
     size_t fr1_pts_number = fr.vectors_to_points.size() / 2;
     // TODO remove it, while now for backward compatibility
 //        fr1.points = fr.points;
@@ -194,6 +192,7 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
   std::sort(
       frontier_list.begin(), frontier_list.end(),
       [](const Frontier& f1, const Frontier& f2) { return f1.cost < f2.cost; });
+  // TODO  do we need sort if only min is interesting? maybe once we have cache behaviour prtial sort will be ok...
 
   return frontier_list;
 }
@@ -209,16 +208,13 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   Frontier output;
   output.centroid.x = 0;
   output.centroid.y = 0;
-  output.size = 1;
-  output.min_distance = std::numeric_limits<double>::infinity();
+//  output.size = 1;
+//  output.min_distance = std::numeric_limits<double>::infinity();
 
   // record initial contact point for frontier
   unsigned int ix, iy;
   costmap_->indexToCells(initial_cell, ix, iy);
-//  ROS_ERROR_STREAM(ix << "   ---   "  << iy);
-
   costmap_->mapToWorld(ix, iy, output.initial.x, output.initial.y);
-
 
   // push initial gridcell onto queue
   std::queue<unsigned int> bfs;
