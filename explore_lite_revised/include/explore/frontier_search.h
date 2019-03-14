@@ -15,7 +15,7 @@ struct Frontier {
   double cost{0.0};
   geometry_msgs::Point initial;
   geometry_msgs::Point centroid;
-  geometry_msgs::Point middle;
+  geometry_msgs::Point closest_point;
   std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
   std::vector<geometry_msgs::Point> points;
   std::vector<geometry_msgs::Point> vectors_to_points;

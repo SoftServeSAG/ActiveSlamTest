@@ -104,13 +104,13 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
     fr2.centroid = fr2.vectors_to_points[fr2.vectors_to_points.size() / 2];
         fr2.centroid.x += fr.reference_robot_pose.x;
         fr2.centroid.y += fr.reference_robot_pose.y;
-        fr1.middle = fr1.centroid; // todo change it to closest if needed
-        fr2.middle = fr2.centroid; // todo change it to closest if needed
+        fr1.closest_point = fr1.centroid; // todo change it to closest if needed
+        fr2.closest_point = fr2.centroid; // todo change it to closest if needed
         std::vector<Frontier> frontiers{fr1, fr2}, vector_buf, res;
         for (auto& fr: frontiers){
             double fr_angular_dist = angular_vector_distance(fr.interpolated_line.first, fr.interpolated_line.second);
             ROS_DEBUG_STREAM("FR1 has [" << fr_angular_dist << "]  deg  [" << fr1.vectors_to_points.size() << "] PTS");
-            if (fr_angular_dist > 10.0
+            if (fr_angular_dist > fr.max_frontier_angular_size
                 && fr1.vectors_to_points.size() > 6)  // to allways have two subdrontiers with middlepoints
             {
                 ROS_DEBUG_STREAM("PERFORM Fr1 RECURSIVE SPLITTING");
@@ -208,8 +208,6 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   Frontier output;
   output.centroid.x = 0;
   output.centroid.y = 0;
-//  output.size = 1;
-//  output.min_distance = std::numeric_limits<double>::infinity();
 
   // record initial contact point for frontier
   unsigned int ix, iy;
@@ -227,6 +225,7 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   costmap_->mapToWorld(rx, ry, reference_x, reference_y);
   output.reference_robot_pose.x = reference_x;
   output.reference_robot_pose.y = reference_y;
+
 // TODO place it on a parameter server
 size_t choose_each = 1;
 
@@ -270,8 +269,8 @@ size_t choose_each = 1;
         double distance = std::hypot(reference_x - wx, reference_y - wy);
         if (distance < output.min_distance) {
           output.min_distance = distance;
-          output.middle.x = wx;
-          output.middle.y = wy;
+          output.closest_point.x = wx;
+          output.closest_point.y = wy;
         }
 
         // add to queue for breadth first search
@@ -280,7 +279,7 @@ size_t choose_each = 1;
     }
   }
 
-//  output.min_distance = std::hypot(reference_x - output.middle.x, reference_y - output.middle.y);
+//  output.min_distance = std::hypot(reference_x - output.closest_point.x, reference_y - output.closest_point.y);
   // average out frontier centroid
 
   output.centroid.x /= output.size;
@@ -291,39 +290,17 @@ size_t choose_each = 1;
   std::sort(output.vectors_to_points.begin(), output.vectors_to_points.end(), cmp_by_angle);
 
   // fixme find out why there are occuring empty frontiers (empty raw points)
-//  ROS_WARN_STREAM(output.vectors_to_points.size() << "  VEC LENGTH");
-//  if (output.vectors_to_points.size() > 0)
-//      ROS_WARN_STREAM(output.vectors_to_points.front() << "  VEC LENGTH" << output.vectors_to_points.back());
-//  else
-//      ROS_WARN_STREAM(output.points.size() << "  FULL LENGTH ");
   output.interpolated_line = approximateFrontierByViewAngle(output);
-
-
-// angular distance for vectors
-// TODO move to approppriate frontier
+  std::vector<Frontier> splitted_frontiers{output};
 if (!output.vectors_to_points.empty()){
 
     double degrees_distance = angular_vector_distance(output.interpolated_line.first, output.interpolated_line.second, output.reference_robot_pose);
-    double max_view_angle_for_frontier = 10.0; // todo make the parameter
-    if (degrees_distance > max_view_angle_for_frontier){
+    if (degrees_distance > output.max_frontier_angular_size){
         ROS_WARN_STREAM("Detected too wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  splitting on two");
-
-        auto splitted = splitFrontier(output);
-//        for (auto &fr: splitted){
-//            degrees_distance =  std::abs( atan2(fr.interpolated_line.first.y, fr.interpolated_line.first.x) - atan2(fr.interpolated_line.second.y, fr.interpolated_line.second.x) )
-//                    * 180.0 / M_PI;
-//            ROS_WARN_STREAM("New frontier, " << degrees_distance);
-//        }
-
-        return splitted;
+        splitted_frontiers = splitFrontier(output);
     }
 }
-
-//  ROS_ERROR_STREAM("distance in degrees = " << getDegreesDistance(output.interpolated_line.first, output.interpolated_line.second, reference_robot_pose));
-  // next splitting onto pieces while they are more then 10deg from robots perspective
-
-
-  return {output};
+  return splitted_frontiers;
 }
 
 
