@@ -91,38 +91,38 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
     std::vector<Frontier> splitFrontier(Frontier& fr){
         Frontier fr1, fr2;
 
-        fr1.reference_robot_pose = fr.reference_robot_pose;
-        fr2.reference_robot_pose = fr.reference_robot_pose;
-        size_t fr1_pts_number = fr.vectors_to_points.size() / 2;
-
-        fr1.vectors_to_points = std::vector<geometry_msgs::Point>(fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + fr1_pts_number);
-        fr1.interpolated_line = {fr.interpolated_line.first, fr.centroid};
-        fr1.centroid = fr1.vectors_to_points[fr1.vectors_to_points.size() / 2]; // not true centroid, but who cares... //todo maybe
-
-        // moving from relative vector to absolute coordinates
-        fr1.centroid.x += fr.reference_robot_pose.x;
-        fr1.centroid.y += fr.reference_robot_pose.y;
-
-        fr2.vectors_to_points = std::vector<geometry_msgs::Point>( fr.vectors_to_points.begin() + fr1_pts_number,  fr.vectors_to_points.end());
-        fr2.interpolated_line = {fr.centroid, fr.interpolated_line.second};
-        fr2.centroid = fr2.vectors_to_points[fr2.vectors_to_points.size() / 2];
-
-        fr2.centroid.x += fr.reference_robot_pose.x;
-        fr2.centroid.y += fr.reference_robot_pose.y;
-
         std::vector<Frontier> frontiers{fr1, fr2}, vector_buf, res;
-        for (auto& fr: frontiers){
+        size_t splits = frontiers.size();
+        size_t current_element {0}, split_size {fr.vectors_to_points.size() / splits};
+        for (auto& this_fr: frontiers){
+            this_fr.reference_robot_pose = fr.reference_robot_pose;
+            this_fr.vectors_to_points = std::vector<geometry_msgs::Point>(fr.vectors_to_points.begin() + current_element, fr.vectors_to_points.begin() + current_element + split_size);
+            current_element += split_size;
+            this_fr.interpolated_line = {this_fr.vectors_to_points.front(), this_fr.vectors_to_points.back()};
+            this_fr.centroid = *(this_fr.vectors_to_points.begin() + split_size / 2);  // not true centroid, but who cares... //todo maybe
+//            for (geometry_msgs::Point pt: std::vector<geometry_msgs::Point>{this_fr.centroid, this_fr.interpolated_line.first, this_fr.interpolated_line.second} ){
+//                this_fr.fromReferenceFrame(pt);
+//            } // todo find the way to iterate over it
+            this_fr.fromReferenceFrame(this_fr.centroid);
+            this_fr.fromReferenceFrame(this_fr.interpolated_line.first);
+            this_fr.fromReferenceFrame(this_fr.interpolated_line.second);
 
-            double fr_angular_dist = angular_vector_distance(fr.interpolated_line.first, fr.interpolated_line.second);
-            ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << fr1.vectors_to_points.size() << "] PTS");
-            if (fr_angular_dist > fr.max_frontier_angular_size
+            if (fr.vectors_to_points.end() - fr.vectors_to_points.begin() - current_element < split_size) {
+                this_fr.vectors_to_points.insert(this_fr.vectors_to_points.end(),
+                                                 fr.vectors_to_points.begin() + current_element,
+                                                 fr.vectors_to_points.end()); // uppend last chunk in case of division leftover
+            }
+
+            double fr_angular_dist = angular_vector_distance(this_fr.interpolated_line.first, this_fr.interpolated_line.second);
+            ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << frontiers[0].vectors_to_points.size() << "] PTS");
+            if (fr_angular_dist > this_fr.max_frontier_angular_size
                 && fr1.vectors_to_points.size() > 6)  // to allways have two subdrontiers with middlepoints
             {
                 ROS_DEBUG_STREAM("PERFORM FRONTIER RECURSIVE SPLITTING");
-                vector_buf = splitFrontier(fr);
+                vector_buf = splitFrontier(this_fr);
                 ROS_DEBUG_STREAM("RECURSIVE SPLITTING PREFORMED OK");
             } else{
-                vector_buf = {fr};
+                vector_buf = {this_fr};
             }
             res.insert(res.end(), vector_buf.begin(), vector_buf.end());
         }
