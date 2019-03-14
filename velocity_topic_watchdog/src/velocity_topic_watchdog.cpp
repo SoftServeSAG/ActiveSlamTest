@@ -16,9 +16,9 @@ ros::Duration *watchdog_duration;
 double watchdog_timeout_param (3.0);
 
 void watchdogTimerCallback(const ros::TimerEvent &timerEvent){
-    ROS_WARN_STREAM("velocity_topic_watchdog activated!");
+    ROS_INFO_STREAM("velocity_topic_watchdog activated!");
     pub_ptr->publish(*stop_msg_ptr);
-    ROS_WARN_STREAM("STOP MSG PUBLISHED to [" << pub_ptr->getTopic() << "]");
+    ROS_INFO_STREAM("STOP MSG PUBLISHED to [" << pub_ptr->getTopic() << "]");
     global_timer->stop();
 }
 

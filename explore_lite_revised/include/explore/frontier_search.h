@@ -19,6 +19,7 @@ struct Frontier {
   std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
   std::vector<geometry_msgs::Point> points;
   std::vector<geometry_msgs::Point> vectors_to_points;
+  geometry_msgs::Point reference_robot_pose;
 };
 
 /**
@@ -49,8 +50,7 @@ public:
 protected:
     std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierPlanarFarthest(Frontier &fr,
                                                                                        geometry_msgs::Point &reference_robot);
-    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierViewAngle(Frontier &fr,
-                                                                                         geometry_msgs::Point &reference_robot);
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierViewAngle(Frontier &fr);
 
 
 
