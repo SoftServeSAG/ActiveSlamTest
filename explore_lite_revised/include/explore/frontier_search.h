@@ -10,14 +10,14 @@ namespace frontier_exploration
  *
  */
 struct Frontier {
-    std::uint32_t size{0};
+//    std::uint32_t size{0};
   double min_distance{std::numeric_limits<double>::infinity()};
   double cost{0.0};
   geometry_msgs::Point initial;
   geometry_msgs::Point centroid;
   geometry_msgs::Point closest_point;
   std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
-  std::vector<geometry_msgs::Point> points;
+//  std::vector<geometry_msgs::Point> points;
   std::vector<geometry_msgs::Point> vectors_to_points;
   geometry_msgs::Point reference_robot_pose;
   double max_frontier_angular_size{10.0}; // TODO make a parameter on parameter server
@@ -30,9 +30,7 @@ struct Frontier {
 class FrontierSearch
 {
 public:
-  FrontierSearch()
-  {
-  }
+  FrontierSearch() = default;
 
   /**
    * @brief Constructor for search task

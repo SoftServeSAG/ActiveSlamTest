@@ -48,20 +48,20 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
         double max_dist = 0.0;
         double heuristics_dist {0.0};
         geometry_msgs::Point p1, p2;
-      for (auto &point: fr.points){
+      for (auto &point: fr.vectors_to_points){
           heuristics_dist =
-                  std::hypot(point.x - reference_robot.x , point.y - reference_robot.y) +  /* robot_point_dist */
-                  std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y); /* centroid_point dist */
+                  std::hypot(point.x , point.y ) +  /* robot_point_dist */
+                  std::hypot(point.x , point.y ); /* centroid_point dist */
           if (heuristics_dist > max_dist){
               max_dist = heuristics_dist;
               p1 = point;
           }
       }
       max_dist = 0.0;
-       for (auto &point: fr.points){
+       for (auto &point: fr.vectors_to_points){
            heuristics_dist =
                    std::hypot(point.x - p1.x , point.y - p1.y) +  /*  point-point dist */
-                   std::hypot(point.x - fr.centroid.x , point.y - fr.centroid.y); /* centroid_point dist */
+                   std::hypot( (/*transforming to map frame*/point.x + reference_robot.x) - fr.centroid.x , (point.y + reference_robot.y) - fr.centroid.y); /* centroid_point dist */
             if (heuristics_dist > max_dist){
                 max_dist = heuristics_dist;
                 p2 = point;
@@ -87,9 +87,6 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
     std::vector<Frontier> splitFrontier(Frontier& fr){
     Frontier fr1(fr), fr2(fr);
     size_t fr1_pts_number = fr.vectors_to_points.size() / 2;
-    // TODO remove it, while now for backward compatibility
-//        fr1.points = fr.points;
-//        fr2.points = fr.points;
     fr1.vectors_to_points = std::vector<geometry_msgs::Point>(fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + fr1_pts_number);
     fr1.interpolated_line = {fr.interpolated_line.first, fr.centroid};
     fr1.centroid = fr1.vectors_to_points[fr1.vectors_to_points.size() / 2]; // not true centroid, but who cares...
@@ -109,11 +106,11 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
         std::vector<Frontier> frontiers{fr1, fr2}, vector_buf, res;
         for (auto& fr: frontiers){
             double fr_angular_dist = angular_vector_distance(fr.interpolated_line.first, fr.interpolated_line.second);
-            ROS_DEBUG_STREAM("FR1 has [" << fr_angular_dist << "]  deg  [" << fr1.vectors_to_points.size() << "] PTS");
+            ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << fr1.vectors_to_points.size() << "] PTS");
             if (fr_angular_dist > fr.max_frontier_angular_size
                 && fr1.vectors_to_points.size() > 6)  // to allways have two subdrontiers with middlepoints
             {
-                ROS_DEBUG_STREAM("PERFORM Fr1 RECURSIVE SPLITTING");
+                ROS_DEBUG_STREAM("PERFORM FRONTIER RECURSIVE SPLITTING");
                 vector_buf = splitFrontier(fr);
                 ROS_DEBUG_STREAM("RECURSIVE SPLITTING PREFORMED OK");
             } else{
@@ -126,7 +123,7 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
 
 
 std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
-{
+    {
   std::vector<Frontier> frontier_list;
 
   // Sanity check that robot is inside costmap bounds before searching
@@ -177,7 +174,9 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
         frontier_flag[nbr] = true;
         std::vector<Frontier> new_frontiers = buildNewFrontier(nbr, pos, frontier_flag);
         for (auto &new_frontier: new_frontiers){
-            if (new_frontier.size * costmap_->getResolution() >= min_frontier_size_) {
+            /*KD : TODO after moving sparsicng factor to the parameter server rescale those allso*/
+            ROS_WARN_STREAM("MIN_FRONTIER" << min_frontier_size_);
+            if (new_frontier.vectors_to_points.size() * costmap_->getResolution() >= min_frontier_size_) {
                 frontier_list.push_back(new_frontier);
             }
         }
@@ -227,7 +226,7 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   output.reference_robot_pose.y = reference_y;
 
 // TODO place it on a parameter server
-size_t choose_each = 1;
+size_t choose_each{1}, cntr{0};
 
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
@@ -243,26 +242,28 @@ size_t choose_each = 1;
         costmap_->indexToCells(nbr, mx, my);
         costmap_->mapToWorld(mx, my, wx, wy);
 
-        // selecting sparce points
-        if (output.points.size() % choose_each == 0){
+        // leaving only each n-th point
+        if (cntr++ % choose_each == 0){
             geometry_msgs::Point reference_scope_point;
             reference_scope_point.x = wx - reference_x;
             reference_scope_point.y = wy - reference_y;
             output.vectors_to_points.push_back(reference_scope_point);
+            output.centroid.x += wx; // map frame coords
+            output.centroid.y += wy;
         }
 
 
-        geometry_msgs::Point point;
-        point.x = wx;
-        point.y = wy;
-        output.points.push_back(point);
+//        geometry_msgs::Point point;
+//        point.x = wx;
+//        point.y = wy;
+//        output.points.push_back(point);
 
         // update frontier size
-        output.size++; // FIXME R U SRIOS!?
+//        output.size++; // FIXME R U SRIOS!?
 
         // update centroid of frontier
-        output.centroid.x += wx;
-        output.centroid.y += wy;
+//        output.centroid.x += wx;
+//        output.centroid.y += wy;
 
         // determine frontier's distance from robot, going by closest gridcell
         // to robot
@@ -282,8 +283,9 @@ size_t choose_each = 1;
 //  output.min_distance = std::hypot(reference_x - output.closest_point.x, reference_y - output.closest_point.y);
   // average out frontier centroid
 
-  output.centroid.x /= output.size;
-  output.centroid.y /= output.size;
+
+  output.centroid.x /= output.vectors_to_points.size();
+  output.centroid.y /= output.vectors_to_points.size();
   /*KD*/
 
 //  todo doit with lambda
