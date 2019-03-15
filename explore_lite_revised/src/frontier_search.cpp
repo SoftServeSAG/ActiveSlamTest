@@ -38,6 +38,19 @@ inline geometry_msgs::Point getClosestPointTo(const std::vector<geometry_msgs::P
     return *min_elem_iter;
 }
 
+    geometry_msgs::Point Frontier::toReferenceFrame(const geometry_msgs::Point &pt){
+        geometry_msgs::Point pt_in_reference_frame;
+        pt_in_reference_frame.x = pt.x - reference_robot_pose.x;
+        pt_in_reference_frame.y = pt.y - reference_robot_pose.y;
+        return  pt_in_reference_frame;
+}
+    geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame){
+        geometry_msgs::Point pt_in_absolute_frame;
+        pt_in_absolute_frame.x = pt_in_reference_frame.x + reference_robot_pose.x;
+        pt_in_absolute_frame.y = pt_in_reference_frame.y + reference_robot_pose.y;
+        return  pt_in_absolute_frame;
+    }
+
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
                                double potential_scale, double gain_scale,
                                double min_frontier_size)
@@ -79,10 +92,8 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
             frontier_exploration::Frontier &fr) {
         geometry_msgs::Point p1, p2;
         if (!fr.vectors_to_points.empty()){
-            p1.x = fr.vectors_to_points.front().x + fr.reference_robot_pose.x;
-            p1.y = fr.vectors_to_points.front().y + fr.reference_robot_pose.y;
-            p2.x = fr.vectors_to_points.back().x + fr.reference_robot_pose.x;
-            p2.y = fr.vectors_to_points.back().y + fr.reference_robot_pose.y;
+            p1 = fr.fromReferenceFrame(fr.vectors_to_points.front());
+            p2 = fr.fromReferenceFrame(fr.vectors_to_points.back());
             ROS_DEBUG_STREAM( " approximated borders with view angle " <<  fr.vectors_to_points.front() << fr.vectors_to_points.back());
         } // else default zero values
         return {p1, p2};
@@ -103,9 +114,9 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
 //            for (geometry_msgs::Point pt: std::vector<geometry_msgs::Point>{this_fr.centroid, this_fr.interpolated_line.first, this_fr.interpolated_line.second} ){
 //                this_fr.fromReferenceFrame(pt);
 //            } // todo find the way to iterate over it
-            this_fr.fromReferenceFrame(this_fr.centroid);
-            this_fr.fromReferenceFrame(this_fr.interpolated_line.first);
-            this_fr.fromReferenceFrame(this_fr.interpolated_line.second);
+            this_fr.centroid = this_fr.fromReferenceFrame(this_fr.centroid);
+            this_fr.interpolated_line.first = this_fr.fromReferenceFrame(this_fr.interpolated_line.first);
+            this_fr.interpolated_line.second = this_fr.fromReferenceFrame(this_fr.interpolated_line.second);
 
             if (fr.vectors_to_points.end() - fr.vectors_to_points.begin() - current_element < split_size) {
                 this_fr.vectors_to_points.insert(this_fr.vectors_to_points.end(),

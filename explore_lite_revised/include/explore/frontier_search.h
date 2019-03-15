@@ -21,14 +21,8 @@ struct Frontier {
   std::vector<geometry_msgs::Point> vectors_to_points;
   geometry_msgs::Point reference_robot_pose;
   double max_frontier_angular_size{10.0}; // TODO make a parameter on parameter server
-  void toReferenceFrame(geometry_msgs::Point &pt){
-      pt.x -= reference_robot_pose.x;
-      pt.y -= reference_robot_pose.y;
-  }
-    void fromReferenceFrame(geometry_msgs::Point &pt){
-        pt.x += reference_robot_pose.x;
-        pt.y += reference_robot_pose.y;
-    }
+    geometry_msgs::Point toReferenceFrame(const geometry_msgs::Point &pt);
+    geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
 };
 
 /**
