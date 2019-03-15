@@ -9,7 +9,9 @@ namespace frontier_exploration
  * @brief Represents a frontier
  *
  */
+
 struct Frontier {
+    //todo make a class of it, make methods static methods of class
 //    std::uint32_t size{0};
   double min_distance{std::numeric_limits<double>::infinity()};
   double cost{0.0};

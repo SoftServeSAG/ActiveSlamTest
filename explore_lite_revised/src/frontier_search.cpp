@@ -38,18 +38,18 @@ inline geometry_msgs::Point getClosestPointTo(const std::vector<geometry_msgs::P
     return *min_elem_iter;
 }
 
-    geometry_msgs::Point Frontier::toReferenceFrame(const geometry_msgs::Point &pt){
-        geometry_msgs::Point pt_in_reference_frame;
-        pt_in_reference_frame.x = pt.x - reference_robot_pose.x;
-        pt_in_reference_frame.y = pt.y - reference_robot_pose.y;
-        return  pt_in_reference_frame;
+geometry_msgs::Point Frontier::toReferenceFrame(const geometry_msgs::Point &pt_in_absolute_frame){
+    geometry_msgs::Point pt_in_reference_frame;
+    pt_in_reference_frame.x = pt_in_absolute_frame.x - reference_robot_pose.x;
+    pt_in_reference_frame.y = pt_in_absolute_frame.y - reference_robot_pose.y;
+    return  pt_in_reference_frame;
 }
-    geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame){
-        geometry_msgs::Point pt_in_absolute_frame;
-        pt_in_absolute_frame.x = pt_in_reference_frame.x + reference_robot_pose.x;
-        pt_in_absolute_frame.y = pt_in_reference_frame.y + reference_robot_pose.y;
-        return  pt_in_absolute_frame;
-    }
+geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame){
+    geometry_msgs::Point pt_in_absolute_frame;
+    pt_in_absolute_frame.x = pt_in_reference_frame.x + reference_robot_pose.x;
+    pt_in_absolute_frame.y = pt_in_reference_frame.y + reference_robot_pose.y;
+    return  pt_in_absolute_frame;
+}
 
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
                                double potential_scale, double gain_scale,
@@ -111,9 +111,7 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
             current_element += split_size;
             this_fr.interpolated_line = {this_fr.vectors_to_points.front(), this_fr.vectors_to_points.back()};
             this_fr.centroid = *(this_fr.vectors_to_points.begin() + split_size / 2);  // not true centroid, but who cares... //todo maybe
-//            for (geometry_msgs::Point pt: std::vector<geometry_msgs::Point>{this_fr.centroid, this_fr.interpolated_line.first, this_fr.interpolated_line.second} ){
-//                this_fr.fromReferenceFrame(pt);
-//            } // todo find the way to iterate over it
+
             this_fr.centroid = this_fr.fromReferenceFrame(this_fr.centroid);
             this_fr.interpolated_line.first = this_fr.fromReferenceFrame(this_fr.interpolated_line.first);
             this_fr.interpolated_line.second = this_fr.fromReferenceFrame(this_fr.interpolated_line.second);
@@ -131,7 +129,6 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
             {
                 ROS_DEBUG_STREAM("PERFORM FRONTIER RECURSIVE SPLITTING");
                 vector_buf = splitFrontier(this_fr);
-                ROS_DEBUG_STREAM("RECURSIVE SPLITTING PREFORMED OK");
             } else{
                 vector_buf = {this_fr};
             }
