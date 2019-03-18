@@ -59,12 +59,14 @@ Explore::Explore()
   , prev_distance_(0)
   , last_markers_count_(0)
 {
-  double timeout;
+  double timeout, hidden_timeout;
   int use_each_k_point;
   double min_frontier_size, max_frontier_angular_size; // parameters for FrontierSearch class
   private_nh_.param("planner_frequency", planner_frequency_, 1.0);
   private_nh_.param("progress_timeout", timeout, 30.0);
+  private_nh_.param("hidden_progress_timeout", hidden_timeout, 10.0);
   progress_timeout_ = ros::Duration(timeout);
+  hidden_progress_timeout_ = ros::Duration(hidden_timeout);
   private_nh_.param("visualize", visualize_, false);
   private_nh_.param("potential_scale", potential_scale_, 1e-3); // todo why so strange coeff?
   private_nh_.param("orientation_scale", orientation_scale_, 0.0);
@@ -97,9 +99,9 @@ Explore::~Explore()
   stop();
 }
 
-std_msgs::ColorRGBA *blue;
-std_msgs::ColorRGBA *red;
-std_msgs::ColorRGBA *green;
+  std_msgs::ColorRGBA *blue;
+  std_msgs::ColorRGBA *red;
+  std_msgs::ColorRGBA *green;
 
     visualization_msgs::Marker *default_msg_template;
 
@@ -242,9 +244,9 @@ void Explore::makePlan()
     return;
   }
 
-
-  for (auto &fr: frontiers){
-    fr.hidden = std::hypot(pose.position.x - fr.centroid.x, pose.position.y - fr.centroid.y) < this->hidden_distance_threshold;
+  // TODO move this and other frontiers init stuff to class constructor
+  for (auto &fr: frontiers) {
+    fr.hidden = search_.is_hidden(fr, hidden_distance_threshold);
   }
 
   // publish frontiers as visualization markers
@@ -252,45 +254,53 @@ void Explore::makePlan()
     visualizeFrontiers(frontiers);
   }
 
-//  auto hidden_frontiers = std::find_if(frontiers.begin(), frontiers.end(),
-//                                                   [this](const frontier_exploration::Frontier& f) {
-//                                                       return f.hidden;
-//                                                   });
-
+  // TODO if there will be no use of this container -- remove it
+  // find non blacklisted frontier
   std::vector<frontier_exploration::Frontier> hidden_frontiers {frontiers.size()};
   auto it = std::copy_if (frontiers.begin(), frontiers.end(), hidden_frontiers.begin(), [this](frontier_exploration::Frontier &fr){return fr.hidden;} );
+//  auto hidden_n = ;
   hidden_frontiers.resize(std::distance(hidden_frontiers.begin(), it));
 
-  // find non blacklisted frontier
-  // FIXME with current implementeation and recalculation on each planning step this is useless
-  // TODO provide upon frontiers caching
-  auto frontier =
-      std::find_if_not(frontiers.begin(), frontiers.end(),
-                       [this](const frontier_exploration::Frontier& f) {
-                         return goalOnBlacklist(f.centroid);
-                       }); // KD as frontiers stored sorted by their cost shold do the thing...
-  if (frontier == frontiers.end()) {
-    stop();
-    return;
+  auto frontier = std::find_if_not(hidden_frontiers.begin(), hidden_frontiers.end(),
+                                       [this](const frontier_exploration::Frontier& f) {
+                                           return goalOnBlacklist(f.centroid);
+                                       });
+  // todo REFROMAT FUNCTION
+  if (frontier == hidden_frontiers.end()) {
+    // FIXME with current implementeation and recalculation on each planning step this is useless
+    // TODO provide upon frontiers caching
+    frontier =
+            std::find_if_not(frontiers.begin(), frontiers.end(),
+                             [this](const frontier_exploration::Frontier& f) {
+                                 return goalOnBlacklist(f.centroid);
+                             }); // KD as frontiers stored sorted by their cost shold do the thing...
+    if (frontier == frontiers.end()) {
+      stop();
+      return;
+    }
   }
+
   geometry_msgs::Point target_position = frontier->centroid;
 
   // time out if we are not making any progress
   bool same_goal = prev_goal_ == target_position;
   prev_goal_ = target_position;
+
   if (!same_goal || prev_distance_ > frontier->min_distance) {
     // we have different goal or we made some progress
     last_progress_ = ros::Time::now();
     prev_distance_ = frontier->min_distance;
   }
+
   // black list if we've made no progress for a long time
-  if (ros::Time::now() - last_progress_ > progress_timeout_) {
+  if (ros::Time::now() - last_progress_ > progress_timeout_ ||
+          (frontier->hidden && ros::Time::now() - last_progress_ > hidden_progress_timeout_) ) {
     frontier_blacklist_.push_back(target_position);
     ROS_DEBUG("Adding current goal to black list");
     makePlan();
     return;
   }
-
+  // TODO add heuristic to persue same goal while not achieved update
   // we don't need to do anything if we still pursuing the same goal
   if (same_goal) {
     return;

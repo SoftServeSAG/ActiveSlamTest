@@ -51,6 +51,8 @@ public:
    */
   std::vector<Frontier> searchFrom(geometry_msgs::Point position);
 
+
+    bool is_hidden(frontier_exploration::Frontier &fr, double distance_thresh);
 protected:
     std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(Frontier &fr,
                                                                                          geometry_msgs::Point &reference_robot);

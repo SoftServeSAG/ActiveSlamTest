@@ -319,6 +319,11 @@ bool FrontierSearch::isNewFrontierCell(unsigned int idx,
   return false;
 }
 
+// todo Detect other room case
+bool FrontierSearch::is_hidden(frontier_exploration::Frontier &fr, double thresh_distance){
+    return std::hypot(fr.centroid.x - fr.reference_robot_pose.x, fr.centroid.y - fr.reference_robot_pose.y) < thresh_distance;
+}
+
 double FrontierSearch::frontierCost(const Frontier& frontier)
 {
   return (potential_scale_ * frontier.min_distance
