@@ -123,7 +123,6 @@ void Explore::visualizeFrontiers(
   // weighted frontiers are always sorted
   double min_cost = frontiers.empty() ? 0. : frontiers.front().cost;
 
-
   m.id = 0;
 
   m.action = visualization_msgs::Marker::DELETEALL;
@@ -145,8 +144,6 @@ void Explore::visualizeFrontiers(
       m.color = *red;
       m.header.stamp = ros::Time::now();
       markers.push_back(m);
-
-
 
       m.type = visualization_msgs::Marker::LINE_STRIP;
     ++m.id;
@@ -246,11 +243,13 @@ void Explore::makePlan()
   }
 
   // find non blacklisted frontier
+  // FIXME with current implementeation and recalculation on each planning step this is useless
+  // TODO provide upon frontiers caching
   auto frontier =
       std::find_if_not(frontiers.begin(), frontiers.end(),
                        [this](const frontier_exploration::Frontier& f) {
                          return goalOnBlacklist(f.centroid);
-                       });
+                       }); // KD as frontiers stored sorted by their cost shold do the thing...
   if (frontier == frontiers.end()) {
     stop();
     return;
@@ -309,6 +308,9 @@ bool Explore::goalOnBlacklist(const geometry_msgs::Point& goal)
   return false;
 }
 
+
+// FIXME KD: seems useless, as upon getting close to frontier we trigger replanning...
+// todo needs renaming at least...
 void Explore::reachedGoal(const actionlib::SimpleClientGoalState& status,
                           const move_base_msgs::MoveBaseResultConstPtr&,
                           const geometry_msgs::Point& frontier_goal)
