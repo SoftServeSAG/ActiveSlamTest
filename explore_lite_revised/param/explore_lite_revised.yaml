@@ -9,3 +9,7 @@ potential_scale: 3.0
 orientation_scale: 0.0
 gain_scale": 1.0
 transform_tolerance: 0.3
+use_each_k_point: 1
+max_frontier_angular_size: 10.0
+hidden_distance_threshold: 1.0
+hidden_progress_timeout: 10.0

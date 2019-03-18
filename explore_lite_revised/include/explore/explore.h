@@ -108,7 +108,9 @@ private:
   double planner_frequency_;
   double potential_scale_, orientation_scale_, gain_scale_;
   ros::Duration progress_timeout_;
-  bool visualize_;
+  ros::Duration hidden_progress_timeout_;
+  bool visualize_{true};
+  double hidden_distance_threshold {std::numeric_limits<double>::infinity()};
 };
 }
 

@@ -59,19 +59,22 @@ Explore::Explore()
   , prev_distance_(0)
   , last_markers_count_(0)
 {
-  double timeout;
+  double timeout, hidden_timeout;
   int use_each_k_point;
   double min_frontier_size, max_frontier_angular_size; // parameters for FrontierSearch class
   private_nh_.param("planner_frequency", planner_frequency_, 1.0);
   private_nh_.param("progress_timeout", timeout, 30.0);
+  private_nh_.param("hidden_progress_timeout", hidden_timeout, 10.0);
   progress_timeout_ = ros::Duration(timeout);
+  hidden_progress_timeout_ = ros::Duration(hidden_timeout);
   private_nh_.param("visualize", visualize_, false);
-  private_nh_.param("potential_scale", potential_scale_, 1e-3);
+  private_nh_.param("potential_scale", potential_scale_, 1e-3); // todo why so strange coeff?
   private_nh_.param("orientation_scale", orientation_scale_, 0.0);
   private_nh_.param("gain_scale", gain_scale_, 1.0);
   private_nh_.param("min_frontier_size", min_frontier_size, 0.5);
   private_nh_.param("use_each_k_point", use_each_k_point, 1);
   private_nh_.param("max_frontier_angular_size", max_frontier_angular_size, 10.0);
+  private_nh_.param("hidden_distance_threshold", hidden_distance_threshold, 3.0);
 
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
@@ -96,9 +99,9 @@ Explore::~Explore()
   stop();
 }
 
-std_msgs::ColorRGBA *blue;
-std_msgs::ColorRGBA *red;
-std_msgs::ColorRGBA *green;
+  std_msgs::ColorRGBA *blue;
+  std_msgs::ColorRGBA *red;
+  std_msgs::ColorRGBA *green;
 
     visualization_msgs::Marker *default_msg_template;
 
@@ -123,7 +126,6 @@ void Explore::visualizeFrontiers(
   // weighted frontiers are always sorted
   double min_cost = frontiers.empty() ? 0. : frontiers.front().cost;
 
-
   m.id = 0;
 
   m.action = visualization_msgs::Marker::DELETEALL;
@@ -145,8 +147,6 @@ void Explore::visualizeFrontiers(
       m.color = *red;
       m.header.stamp = ros::Time::now();
       markers.push_back(m);
-
-
 
       m.type = visualization_msgs::Marker::LINE_STRIP;
     ++m.id;
@@ -201,16 +201,20 @@ void Explore::visualizeFrontiers(
     m.scale.x = 0.1;
     m.scale.y = 0.1;
     m.scale.z = 0.1;
+
     std::vector<geometry_msgs::Point> translated_vector{ frontier.vectors_to_points.begin(), frontier.vectors_to_points.end()};
-    for (auto &i : translated_vector) {
+    for (auto &i : translated_vector) { // todo introduce tenzor usage
         i.x += frontier.reference_robot_pose.x;
         i.y += frontier.reference_robot_pose.y;
     }
     m.points = translated_vector;
-    m.color = goalOnBlacklist(frontier.centroid) ? *red : *blue;
+    if (goalOnBlacklist(frontier.centroid))
+      m.color = *red;
+    else
+      m.color = frontier.hidden ? *green : *blue;
+
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
-
   }
 
   size_t current_markers_count = markers.size();
@@ -240,39 +244,63 @@ void Explore::makePlan()
     return;
   }
 
+  // TODO move this and other frontiers init stuff to class constructor
+  for (auto &fr: frontiers) {
+    fr.hidden = search_.is_hidden(fr, hidden_distance_threshold);
+  }
+
   // publish frontiers as visualization markers
   if (visualize_) {
     visualizeFrontiers(frontiers);
   }
 
+  // TODO if there will be no use of this container -- remove it
   // find non blacklisted frontier
-  auto frontier =
-      std::find_if_not(frontiers.begin(), frontiers.end(),
-                       [this](const frontier_exploration::Frontier& f) {
-                         return goalOnBlacklist(f.centroid);
-                       });
-  if (frontier == frontiers.end()) {
-    stop();
-    return;
+  std::vector<frontier_exploration::Frontier> hidden_frontiers {frontiers.size()};
+  auto it = std::copy_if (frontiers.begin(), frontiers.end(), hidden_frontiers.begin(), [this](frontier_exploration::Frontier &fr){return fr.hidden;} );
+//  auto hidden_n = ;
+  hidden_frontiers.resize(std::distance(hidden_frontiers.begin(), it));
+
+  auto frontier = std::find_if_not(hidden_frontiers.begin(), hidden_frontiers.end(),
+                                       [this](const frontier_exploration::Frontier& f) {
+                                           return goalOnBlacklist(f.centroid);
+                                       });
+  // todo REFROMAT FUNCTION
+  if (frontier == hidden_frontiers.end()) {
+    // FIXME with current implementeation and recalculation on each planning step this is useless
+    // TODO provide upon frontiers caching
+    frontier =
+            std::find_if_not(frontiers.begin(), frontiers.end(),
+                             [this](const frontier_exploration::Frontier& f) {
+                                 return goalOnBlacklist(f.centroid);
+                             }); // KD as frontiers stored sorted by their cost shold do the thing...
+    if (frontier == frontiers.end()) {
+      stop();
+      return;
+    }
   }
+
   geometry_msgs::Point target_position = frontier->centroid;
 
   // time out if we are not making any progress
   bool same_goal = prev_goal_ == target_position;
   prev_goal_ = target_position;
+
   if (!same_goal || prev_distance_ > frontier->min_distance) {
     // we have different goal or we made some progress
     last_progress_ = ros::Time::now();
     prev_distance_ = frontier->min_distance;
   }
+
   // black list if we've made no progress for a long time
-  if (ros::Time::now() - last_progress_ > progress_timeout_) {
+  if (ros::Time::now() - last_progress_ > progress_timeout_ ||
+          (frontier->hidden && ros::Time::now() - last_progress_ > hidden_progress_timeout_) ) {
     frontier_blacklist_.push_back(target_position);
     ROS_DEBUG("Adding current goal to black list");
     makePlan();
     return;
   }
-
+  // TODO add heuristic to persue same goal while not achieved update
   // we don't need to do anything if we still pursuing the same goal
   if (same_goal) {
     return;
@@ -309,6 +337,9 @@ bool Explore::goalOnBlacklist(const geometry_msgs::Point& goal)
   return false;
 }
 
+
+// FIXME KD: seems useless, as upon getting close to frontier we trigger replanning...
+// todo needs renaming at least...
 void Explore::reachedGoal(const actionlib::SimpleClientGoalState& status,
                           const move_base_msgs::MoveBaseResultConstPtr&,
                           const geometry_msgs::Point& frontier_goal)
