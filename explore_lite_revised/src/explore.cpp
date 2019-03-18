@@ -66,12 +66,13 @@ Explore::Explore()
   private_nh_.param("progress_timeout", timeout, 30.0);
   progress_timeout_ = ros::Duration(timeout);
   private_nh_.param("visualize", visualize_, false);
-  private_nh_.param("potential_scale", potential_scale_, 1e-3);
+  private_nh_.param("potential_scale", potential_scale_, 1e-3); // todo why so strange coeff?
   private_nh_.param("orientation_scale", orientation_scale_, 0.0);
   private_nh_.param("gain_scale", gain_scale_, 1.0);
   private_nh_.param("min_frontier_size", min_frontier_size, 0.5);
   private_nh_.param("use_each_k_point", use_each_k_point, 1);
   private_nh_.param("max_frontier_angular_size", max_frontier_angular_size, 10.0);
+  private_nh_.param("hidden_distance_threshold", hidden_distance_threshold, 3.0);
 
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
@@ -198,16 +199,20 @@ void Explore::visualizeFrontiers(
     m.scale.x = 0.1;
     m.scale.y = 0.1;
     m.scale.z = 0.1;
+
     std::vector<geometry_msgs::Point> translated_vector{ frontier.vectors_to_points.begin(), frontier.vectors_to_points.end()};
-    for (auto &i : translated_vector) {
+    for (auto &i : translated_vector) { // todo introduce tenzor usage
         i.x += frontier.reference_robot_pose.x;
         i.y += frontier.reference_robot_pose.y;
     }
     m.points = translated_vector;
-    m.color = goalOnBlacklist(frontier.centroid) ? *red : *blue;
+    if (goalOnBlacklist(frontier.centroid))
+      m.color = *red;
+    else
+      m.color = frontier.hidden ? *green : *blue;
+
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
-
   }
 
   size_t current_markers_count = markers.size();
@@ -237,10 +242,24 @@ void Explore::makePlan()
     return;
   }
 
+
+  for (auto &fr: frontiers){
+    fr.hidden = std::hypot(pose.position.x - fr.centroid.x, pose.position.y - fr.centroid.y) < this->hidden_distance_threshold;
+  }
+
   // publish frontiers as visualization markers
   if (visualize_) {
     visualizeFrontiers(frontiers);
   }
+
+//  auto hidden_frontiers = std::find_if(frontiers.begin(), frontiers.end(),
+//                                                   [this](const frontier_exploration::Frontier& f) {
+//                                                       return f.hidden;
+//                                                   });
+
+  std::vector<frontier_exploration::Frontier> hidden_frontiers {frontiers.size()};
+  auto it = std::copy_if (frontiers.begin(), frontiers.end(), hidden_frontiers.begin(), [this](frontier_exploration::Frontier &fr){return fr.hidden;} );
+  hidden_frontiers.resize(std::distance(hidden_frontiers.begin(), it));
 
   // find non blacklisted frontier
   // FIXME with current implementeation and recalculation on each planning step this is useless
