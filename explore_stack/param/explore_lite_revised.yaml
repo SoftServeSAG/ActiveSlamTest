@@ -1,5 +1,5 @@
 robot_base_frame: base_link
-min_frontier_size: 0.75
+min_frontier_size: 0.4
 costmap_topic: map
 costmap_updates_topic: map_updates
 visualize: true
@@ -9,5 +9,7 @@ potential_scale: 3.0
 orientation_scale: 0.0
 gain_scale": 1.0
 transform_tolerance: 0.3
+use_each_k_point: 1 # other k-1 point are dropped
+max_frontier_angular_size: 10.0
 
 # TODO make finalizing publication when task is done

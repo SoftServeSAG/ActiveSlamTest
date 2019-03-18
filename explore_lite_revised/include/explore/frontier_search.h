@@ -9,14 +9,21 @@ namespace frontier_exploration
  * @brief Represents a frontier
  *
  */
+
 struct Frontier {
-  std::uint32_t size;
-  double min_distance;
-  double cost;
+    //todo make a class of it, make methods static methods of class
+//    std::uint32_t size{0};
+  double min_distance{std::numeric_limits<double>::infinity()};
+  double cost{0.0};
   geometry_msgs::Point initial;
   geometry_msgs::Point centroid;
-  geometry_msgs::Point middle;
-  std::vector<geometry_msgs::Point> points;
+//  geometry_msgs::Point closest_point; // for now we ommit it as recomputing is qwestionable
+  std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
+//  std::vector<geometry_msgs::Point> points;
+  std::vector<geometry_msgs::Point> vectors_to_points;
+  geometry_msgs::Point reference_robot_pose;
+    geometry_msgs::Point toReferenceFrame(const geometry_msgs::Point &pt);
+    geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
 };
 
 /**
@@ -26,16 +33,15 @@ struct Frontier {
 class FrontierSearch
 {
 public:
-  FrontierSearch()
-  {
-  }
+  FrontierSearch() = default;
 
   /**
    * @brief Constructor for search task
    * @param costmap Reference to costmap data to search.
    */
   FrontierSearch(costmap_2d::Costmap2D* costmap, double potential_scale,
-                 double gain_scale, double min_frontier_size);
+                 double gain_scale, double min_frontier_size,
+                 int use_every_k_point,double max_frontier_angular_size);
 
   /**
    * @brief Runs search implementation, outward from the start position
@@ -45,6 +51,12 @@ public:
   std::vector<Frontier> searchFrom(geometry_msgs::Point position);
 
 protected:
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(Frontier &fr,
+                                                                                         geometry_msgs::Point &reference_robot);
+    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierByViewAngle(Frontier &fr);
+    std::vector<Frontier> splitFrontier(Frontier& fr);
+
+
   /**
    * @brief Starting from an initial cell, build a frontier from valid adjacent
    * cells
@@ -54,8 +66,8 @@ protected:
    * as frontiers
    * @return new frontier
    */
-  Frontier buildNewFrontier(unsigned int initial_cell, unsigned int reference,
-                            std::vector<bool>& frontier_flag);
+  std::vector<Frontier> buildNewFrontier(unsigned int initial_cell, unsigned int reference,
+                                         std::vector<bool> &frontier_flag);
 
   /**
    * @brief isNewFrontierCell Evaluate if candidate cell is a valid candidate
@@ -83,6 +95,8 @@ private:
   unsigned int size_x_, size_y_;
   double potential_scale_, gain_scale_;
   double min_frontier_size_;
+  int use_every_k_point_{1};
+  double max_frontier_angular_size_{10.0}; // TODO make a parameter on parameter server
 };
 }
 #endif

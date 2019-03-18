@@ -16,8 +16,8 @@
 
 
     <!--GAZEBO-->
-    <arg name="world_name" default="turtlebot3_house"/>
-    <!--<arg name="world_name" default="turtlebot3_stage_3"/>-->
+    <!--<arg name="world_name" default="turtlebot3_house"/>-->
+    <arg name="world_name" default="turtlebot3_stage_3"/>
 
 
     <arg name="x_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>
