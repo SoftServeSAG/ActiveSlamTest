@@ -53,11 +53,15 @@ geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &p
 
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
                                double potential_scale, double gain_scale,
-                               double min_frontier_size)
+                               double min_frontier_size,
+                               int use_every_k_point,
+                               double max_frontier_angular_size)
   : costmap_(costmap)
   , potential_scale_(potential_scale)
   , gain_scale_(gain_scale)
   , min_frontier_size_(min_frontier_size)
+  , use_every_k_point_(use_every_k_point)
+  , max_frontier_angular_size_(max_frontier_angular_size)
 {
 }
     std::pair<geometry_msgs::Point, geometry_msgs::Point> FrontierSearch::approxFrontierByPlanarFarthest(Frontier &fr,
@@ -99,7 +103,7 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
         return {p1, p2};
     }
 
-    std::vector<Frontier> splitFrontier(Frontier& fr){
+    std::vector<Frontier> FrontierSearch::splitFrontier(Frontier& fr){
         Frontier fr1, fr2;
 
         std::vector<Frontier> frontiers{fr1, fr2}, vector_buf, res;
@@ -124,7 +128,7 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
 
             double fr_angular_dist = angular_vector_distance(this_fr.interpolated_line.first, this_fr.interpolated_line.second);
             ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << frontiers[0].vectors_to_points.size() << "] PTS");
-            if (fr_angular_dist > this_fr.max_frontier_angular_size
+            if (fr_angular_dist > this->max_frontier_angular_size_
                 && fr1.vectors_to_points.size() > 6)  // to allways have two subdrontiers with middlepoints
             {
                 ROS_DEBUG_STREAM("PERFORM FRONTIER RECURSIVE SPLITTING");
@@ -190,8 +194,6 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
         frontier_flag[nbr] = true;
         std::vector<Frontier> new_frontiers = buildNewFrontier(nbr, pos, frontier_flag);
         for (auto &new_frontier: new_frontiers){
-            /*KD : TODO after moving sparsicng factor to the parameter server rescale those allso*/
-            ROS_WARN_STREAM("MIN_FRONTIER" << min_frontier_size_);
             if (new_frontier.vectors_to_points.size() * costmap_->getResolution() >= min_frontier_size_) {
                 frontier_list.push_back(new_frontier);
             }
@@ -241,8 +243,7 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   output.reference_robot_pose.x = reference_x;
   output.reference_robot_pose.y = reference_y;
 
-// TODO place it on a parameter server
-size_t choose_each{1}, cntr{0};
+size_t  cntr{0};
 
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
@@ -259,7 +260,7 @@ size_t choose_each{1}, cntr{0};
         costmap_->mapToWorld(mx, my, wx, wy);
 
         // leaving only each n-th point
-        if (cntr++ % choose_each == 0){
+        if (cntr++ % this->use_every_k_point_ == 0){
             geometry_msgs::Point reference_scope_point;
             reference_scope_point.x = wx - reference_x;
             reference_scope_point.y = wy - reference_y;
@@ -268,38 +269,12 @@ size_t choose_each{1}, cntr{0};
             output.centroid.y += wy;
         }
 
-
-//        geometry_msgs::Point point;
-//        point.x = wx;
-//        point.y = wy;
-//        output.points.push_back(point);
-
-        // update frontier size
-//        output.size++; // FIXME R U SRIOS!?
-
-        // update centroid of frontier
-//        output.centroid.x += wx;
-//        output.centroid.y += wy;
-
-        // determine frontier's distance from robot, going by closest gridcell
-        // to robot
-        double distance = std::hypot(reference_x - wx, reference_y - wy);
-//        if (distance < output.min_distance) {
-//          output.min_distance = distance;
-//          output.closest_point.x = wx;
-//          output.closest_point.y = wy;
-//        }
-
         // add to queue for breadth first search
         bfs.push(nbr);
       }
     }
   }
-
-//  output.min_distance = std::hypot(reference_x - output.closest_point.x, reference_y - output.closest_point.y);
   // average out frontier centroid
-
-
   output.centroid.x /= output.vectors_to_points.size();
   output.centroid.y /= output.vectors_to_points.size();
   /*KD*/
@@ -315,8 +290,8 @@ size_t choose_each{1}, cntr{0};
 if (!output.vectors_to_points.empty()){
 
     double degrees_distance = angular_vector_distance(output.interpolated_line.first, output.interpolated_line.second, output.reference_robot_pose);
-    if (degrees_distance > output.max_frontier_angular_size){
-        ROS_WARN_STREAM("Detected too wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  splitting on two");
+    if (degrees_distance > this->max_frontier_angular_size_){
+        ROS_INFO_STREAM("Detected wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  SPLITTING...");
         splitted_frontiers = splitFrontier(output);
     }
 }

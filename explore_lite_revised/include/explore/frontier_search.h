@@ -22,7 +22,6 @@ struct Frontier {
 //  std::vector<geometry_msgs::Point> points;
   std::vector<geometry_msgs::Point> vectors_to_points;
   geometry_msgs::Point reference_robot_pose;
-  double max_frontier_angular_size{10.0}; // TODO make a parameter on parameter server
     geometry_msgs::Point toReferenceFrame(const geometry_msgs::Point &pt);
     geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
 };
@@ -41,7 +40,8 @@ public:
    * @param costmap Reference to costmap data to search.
    */
   FrontierSearch(costmap_2d::Costmap2D* costmap, double potential_scale,
-                 double gain_scale, double min_frontier_size);
+                 double gain_scale, double min_frontier_size,
+                 int use_every_k_point,double max_frontier_angular_size);
 
   /**
    * @brief Runs search implementation, outward from the start position
@@ -54,7 +54,7 @@ protected:
     std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(Frontier &fr,
                                                                                          geometry_msgs::Point &reference_robot);
     std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierByViewAngle(Frontier &fr);
-
+    std::vector<Frontier> splitFrontier(Frontier& fr);
 
 
   /**
@@ -95,6 +95,8 @@ private:
   unsigned int size_x_, size_y_;
   double potential_scale_, gain_scale_;
   double min_frontier_size_;
+  int use_every_k_point_{1};
+  double max_frontier_angular_size_{10.0}; // TODO make a parameter on parameter server
 };
 }
 #endif

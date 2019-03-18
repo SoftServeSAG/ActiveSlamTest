@@ -60,7 +60,8 @@ Explore::Explore()
   , last_markers_count_(0)
 {
   double timeout;
-  double min_frontier_size;
+  int use_each_k_point;
+  double min_frontier_size, max_frontier_angular_size; // parameters for FrontierSearch class
   private_nh_.param("planner_frequency", planner_frequency_, 1.0);
   private_nh_.param("progress_timeout", timeout, 30.0);
   progress_timeout_ = ros::Duration(timeout);
@@ -69,10 +70,12 @@ Explore::Explore()
   private_nh_.param("orientation_scale", orientation_scale_, 0.0);
   private_nh_.param("gain_scale", gain_scale_, 1.0);
   private_nh_.param("min_frontier_size", min_frontier_size, 0.5);
+  private_nh_.param("use_each_k_point", use_each_k_point, 1);
+  private_nh_.param("max_frontier_angular_size", max_frontier_angular_size, 10.0);
 
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
-                                                 min_frontier_size);
+                                                 min_frontier_size,  use_each_k_point, max_frontier_angular_size);
 
   if (visualize_) {
     marker_array_publisher_ =
@@ -127,9 +130,7 @@ void Explore::visualizeFrontiers(
   markers.push_back(m);
   ++m.id;
   m.action = visualization_msgs::Marker::ADD;
-//  for (; m.id < last_markers_count_; ++m.id) {
-//    markers.push_back(m);
-//  }
+
 // TODO when the work on visualisation will stabilize, make a separate functuion or even subpackage for it
   for (auto& frontier : frontiers) {
     m.header.frame_id = costmap_client_.getGlobalFrameID();
@@ -200,13 +201,7 @@ void Explore::visualizeFrontiers(
     m.scale.x = 0.1;
     m.scale.y = 0.1;
     m.scale.z = 0.1;
-//    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
-//    ROS_ERROR_STREAM("ref: " << frontier.points[0] <<  frontier.points[1] << frontier.points[2] );
-//    ROS_ERROR_STREAM("map_points: " << frontier.vectors_to_points[0] <<  frontier.vectors_to_points[1] << frontier.vectors_to_points[2] );
-//    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
-//    ROS_ERROR_STREAM(frontier.points.size());
-    std::vector<geometry_msgs::Point> translated_vector;
-    translated_vector.insert(translated_vector.begin(), frontier.vectors_to_points.begin(), frontier.vectors_to_points.end());
+    std::vector<geometry_msgs::Point> translated_vector{ frontier.vectors_to_points.begin(), frontier.vectors_to_points.end()};
     for (auto &i : translated_vector) {
         i.x += frontier.reference_robot_pose.x;
         i.y += frontier.reference_robot_pose.y;
@@ -216,36 +211,9 @@ void Explore::visualizeFrontiers(
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
 
-
-//    for (size_t p_ind = 0; p_ind < frontier.vectors_to_points.size(); ++p_ind){
-//      m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-////    m.header.frame_id = costmap_client_.getBaseFrameID();
-//      ++m.id;
-//      m.pose.position = frontier.vectors_to_points[p_ind];
-//      m.text = std::to_string(p_ind);
-//      m.scale.x = 0.3;
-//      m.scale.y = 0.3;
-//      m.scale.z = 0.3;
-////    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
-//      ROS_ERROR_STREAM("ref: " << frontier.points[0] <<  frontier.points[1] << frontier.points[2] );
-//      ROS_ERROR_STREAM("map_points: " << frontier.vectors_to_points[0] <<  frontier.vectors_to_points[1] << frontier.vectors_to_points[2] );
-////    ROS_ERROR_STREAM(frontier.points_in_reference_coords.size());
-////    ROS_ERROR_STREAM(frontier.points.size());
-//      m.points = frontier.vectors_to_points;
-//      m.color = *red;
-//      m.header.stamp = ros::Time::now();
-//      markers.push_back(m);
-//    }
-
   }
 
   size_t current_markers_count = markers.size();
-
-  // delete previous markers, which are now unused
-//  m.action = visualization_msgs::Marker::DELETE;
-//  for (; m.id < last_markers_count_; ++m.id) {
-//    markers.push_back(m);
-//  }
 
   last_markers_count_ = current_markers_count;
   marker_array_publisher_.publish(markers_msg);
@@ -396,13 +364,6 @@ void initialize_variables(){
 
   default_msg_template = new visualization_msgs::Marker();
   default_msg_template->ns = "frontiers";
-//  default_msg_template->scale.x = 1.0;
-//  default_msg_template->scale.y = 1.0;
-//  default_msg_template->scale.z = 1.0;
-//  default_msg_template->color.r = 0;
-//  default_msg_template->color.g = 0;
-//  default_msg_template->color.b = 255;
-//  default_msg_template->color.a = 255;
   // lives forever
   default_msg_template->lifetime = ros::Duration(0);
   default_msg_template->frame_locked = false;
