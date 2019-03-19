@@ -51,8 +51,7 @@ include_directories(
 add_executable(explore_lite_revised
   src/costmap_client.cpp
   src/explore.cpp
-  src/frontier_search.cpp
-)
+  src/frontier_search.cpp)
 add_dependencies(explore_lite_revised ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(explore_lite_revised ${catkin_LIBRARIES})
 

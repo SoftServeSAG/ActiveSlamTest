@@ -5,7 +5,8 @@
 
 namespace frontier_exploration
 {
-/**
+
+    /**
  * @brief Represents a frontier
  *
  */
@@ -25,6 +26,7 @@ struct Frontier {
     geometry_msgs::Point toReferenceFrame(const geometry_msgs::Point &pt);
     geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
     bool hidden{false};
+    Frontier() = default;
 };
 
 /**

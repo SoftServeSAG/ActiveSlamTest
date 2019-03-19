@@ -53,6 +53,8 @@
 
 namespace explore
 {
+
+
 /**
  * @class Explore
  * @brief A class adhering to the robot_actions::Action interface that moves the
