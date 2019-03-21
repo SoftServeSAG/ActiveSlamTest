@@ -12,8 +12,7 @@ namespace frontier_exploration
  */
 
 struct Frontier {
-    //todo make a class of it, make methods static methods of class
-//    std::uint32_t size{0};
+    //todo improve this struct functionality
   double min_distance{std::numeric_limits<double>::infinity()};
   double cost{0.0};
   geometry_msgs::Point initial;

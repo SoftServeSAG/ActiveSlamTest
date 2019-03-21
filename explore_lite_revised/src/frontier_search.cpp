@@ -41,15 +41,15 @@ inline geometry_msgs::Point getClosestPointTo(const std::vector<geometry_msgs::P
 }
 
 inline geometry_msgs::Point Frontier::toReferenceFrame(const geometry_msgs::Point &pt_in_absolute_frame){
-    return pointMsgBuilder(
+    return makePointMsg(
             pt_in_absolute_frame.x - reference_robot_pose.x,
             pt_in_absolute_frame.y - reference_robot_pose.y,
             0);
 }
 inline geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame){
-    return pointMsgBuilder(pt_in_reference_frame.x + reference_robot_pose.x,
-                           pt_in_reference_frame.y + reference_robot_pose.y,
-                           0);
+    return makePointMsg(pt_in_reference_frame.x + reference_robot_pose.x,
+                        pt_in_reference_frame.y + reference_robot_pose.y,
+                        0);
 }
 
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,

@@ -8,7 +8,7 @@
 #include <costmap_2d/costmap_2d.h>
 
 namespace frontier_exploration{
-    static geometry_msgs::Point pointMsgBuilder(const double x, const double y, const double z){
+    static geometry_msgs::Point makePointMsg(const double x, const double y, const double z){
         geometry_msgs::Point p;
         p.x = x; p.y = y; p.z = z;
         return p;
