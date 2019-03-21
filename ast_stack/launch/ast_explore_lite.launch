@@ -8,7 +8,7 @@
         <!--todo manage terminal postion better-->
 
         <rosparam file="$(find ast_explore_lite)/param/ast_explore_lite.yaml" command="load" />
-        <rosparam file="$(find explore_stack)/param/ast_explore_lite.yaml" command="load" />
+        <rosparam file="$(find ast_stack)/param/ast_explore_lite.yaml" command="load" />
     </node>
 
 </launch>

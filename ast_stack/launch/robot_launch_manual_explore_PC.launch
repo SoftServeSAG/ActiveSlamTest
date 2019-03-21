@@ -11,13 +11,13 @@
           pkg="rviz"
           type="rviz"
           respawn="true"
-          args="-d $(find explore_stack)/rviz/move_base_tuning.rviz"
+          args="-d $(find ast_stack)/rviz/move_base_tuning.rviz"
     />
     </group>
 
 
     <!-- move_base -->
-    <include file="$(find explore_stack)/launch/move_base.launch">
+    <include file="$(find ast_stack)/launch/move_base.launch">
         <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
         <arg name="cmd_vel_topic" default="/cmd_vel" />
         <arg name="odom_topic" default="odom" />

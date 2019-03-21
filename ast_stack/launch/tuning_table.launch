@@ -1,9 +1,7 @@
 <launch>
+
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-
-
-
-    <arg name="cmd_vel_topic" default="cmd_vel" />
+    <arg name="cmd_vel_topic" default="/cmd_vel" />
     <arg name="odom_topic" default="odom" />
 
 
@@ -21,18 +19,18 @@
     <arg name="world_name" default="ss_hq4"/>
     <!--<arg name="world_name" default="office"/>-->
 
-
-    <arg name="x_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>
-    <arg name="y_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>
-    <arg name="z_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>
     <arg name="x_pos" default="-3.0" if="$(eval world_name == 'turtlebot3_house')"/>
     <arg name="y_pos" default="1.0" if="$(eval world_name == 'turtlebot3_house')"/>
     <arg name="z_pos" default="0.0" if="$(eval world_name == 'turtlebot3_house')"/>
+    <arg name="x_pos" default="0.0" if="$(eval world_name == 'ss_hq4')"/>
+    <arg name="y_pos" default="0.0" if="$(eval world_name == 'ss_hq4')"/>
+    <arg name="z_pos" default="0.0" if="$(eval world_name == 'ss_hq4')"/>
+
 
 
     <!--http://answers.gazebosim.org/question/16076/running-gazebo-on-docker-affects-simulation-speed-meshes-and-world-objects/-->
     <include file="$(find gazebo_ros)/launch/empty_world.launch" >
-        <arg name="world_name" value="$(find explore_stack)/worlds/p_worlds/$(arg world_name).world"/>
+        <arg name="world_name" value="$(find ast_stack)/worlds/p_worlds/$(arg world_name).world"/>
         <arg name="paused" value="false"/>
         <arg name="use_sim_time" value="true"/>
         <arg name="gui" value="false"/>
@@ -53,7 +51,8 @@
     <node name="rviz"
           pkg="rviz"
           type="rviz"
-          args="-d $(find explore_stack)/rviz/explore_lite_tb3.rviz"
+          respawn="true"
+          args="-d $(find ast_stack)/rviz/move_base_tuning.rviz"
     />
 
 
@@ -73,18 +72,12 @@
 
 
     <!-- move_base -->
-    <include file="$(find explore_stack)/launch/move_base.launch">
+    <include file="$(find ast_stack)/launch/move_base.launch">
         <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
         <arg name="cmd_vel_topic" default="/cmd_vel" />
         <arg name="odom_topic" default="odom" />
     </include>
     <!-- /move_base -->
-
-
-
-    <include file="$(find explore_stack)/launch/ast_explore_lite.launch">
-    </include>
-    
 
 
 </launch>
