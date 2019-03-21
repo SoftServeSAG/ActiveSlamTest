@@ -1,4 +1,0 @@
-1) create autonomous package for launching single experiment
-2) generalise this package to use parameters to operate experiment settings
-3) write scripts for serving experiments set
-4) find dataset to run and compare algorithms

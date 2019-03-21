@@ -1,0 +1,15 @@
+<launch>
+    <node pkg="ast_explore_lite"
+          type="ast_explore_lite"
+          name="ast_explore_lite"
+          respawn="false"
+          output="screen"
+          launch-prefix="xterm -geometry 93x31+100+350 -e">
+        <!--todo manage terminal postion better-->
+
+        <rosparam file="$(find ast_explore_lite)/param/ast_explore_lite.yaml" command="load" />
+        <rosparam file="$(find ast_stack)/param/ast_explore_lite.yaml" command="load" />
+    </node>
+
+</launch>
+

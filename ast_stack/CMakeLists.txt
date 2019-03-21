@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(velocity_topic_watchdog)
+project(ast_stack)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -7,14 +7,21 @@ project(velocity_topic_watchdog)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  roscpp
-  rospy
-)
+find_package(catkin REQUIRED
+        COMPONENTS
+        #gazebo
+        turtlebot3_navigation
+        turtlebot3_slam
+        turtlebot3_bringup
+        turtlebot3_example
+        turtlebot3_teleop
+        turtlebot3_msgs
+        turtlebot3_gazebo
+        turtlebot3_fake
+        explore_lite)
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system )
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -70,7 +77,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#         geometry_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ################################################
@@ -83,8 +90,8 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
 ## * In this file (CMakeLists.txt):
 ##   * add "dynamic_reconfigure" to
-#     find_package(catkin REQUIRED COMPONENTS ...)
-#   * uncomment the "generate_dynamic_reconfigure_options" section below
+##     find_package(catkin REQUIRED COMPONENTS ...)
+##   * uncomment the "generate_dynamic_reconfigure_options" section below
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
@@ -104,8 +111,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES velocity_topic_watchdog
-#  CATKIN_DEPENDS geometry_msgs roscpp rospy
+#  LIBRARIES ast_stack
+#  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
 
@@ -116,13 +123,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
-  ${catkin_INCLUDE_DIRS}
+# include
+# ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/velocity_topic_watchdog.cpp
+#   src/${PROJECT_NAME}/ast_stack.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -133,7 +140,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(velocity_topic_watchdog src/velocity_topic_watchdog.cpp include/velocity_topic_watchdog/velocity_topic_watchdog.h)
+# add_executable(${PROJECT_NAME}_node src/ast_stack_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,29 +153,13 @@ add_executable(velocity_topic_watchdog src/velocity_topic_watchdog.cpp include/v
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(velocity_topic_watchdog
-   ${catkin_LIBRARIES}
- )
+# target_link_libraries(${PROJECT_NAME}_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
 #############
-
-#############
-## Install ##
-#############
-# install nodes
-install(TARGETS velocity_topic_watchdog
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
-
-# install roslaunch files
-install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-        )
-
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
@@ -206,7 +197,7 @@ install(DIRECTORY launch/
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_cmd_vel_watchdog.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ast_stack.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

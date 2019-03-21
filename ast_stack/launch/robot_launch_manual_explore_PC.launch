@@ -1,0 +1,38 @@
+<launch>
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+
+    <arg name="cmd_vel_topic" default="/cmd_vel" />
+    <arg name="odom_topic" default="odom" />
+    <arg name="launch_rviz" default='false'/>
+
+
+    <group if="$(arg launch_rviz)">
+    <node name="rviz"
+          pkg="rviz"
+          type="rviz"
+          respawn="true"
+          args="-d $(find ast_stack)/rviz/move_base_tuning.rviz"
+    />
+    </group>
+
+
+    <!-- move_base -->
+    <include file="$(find ast_move_base)/launch/move_base.launch">
+        <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+        <arg name="cmd_vel_topic" default="/cmd_vel" />
+        <arg name="odom_topic" default="odom" />
+    </include>
+    <!-- /move_base -->
+
+
+    <!-- SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
+    <arg name="slam_methods" default="gmapping" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/>
+
+    <arg name="configuration_basename" default="turtlebot3_lds_2d.lua"/>
+<!--FIXME problem when try to launch directly turtlebot3_gmapping instead of slam mediator launcher-->
+    <include file="$(find turtlebot3_slam)/launch/turtlebot3_slam.launch">
+        <arg name="slam_methods" value="$(arg slam_methods)"/>
+    </include>
+
+
+</launch>
