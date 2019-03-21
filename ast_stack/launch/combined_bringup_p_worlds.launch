@@ -73,7 +73,7 @@
 
 
     <!-- move_base -->
-    <include file="$(find ast_move_base)/launch/move_base.launch">
+    <include file="$(find ss_turtle3_move_base)/launch/move_base.launch">
         <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
         <arg name="cmd_vel_topic" default="/cmd_vel" />
         <arg name="odom_topic" default="odom" />

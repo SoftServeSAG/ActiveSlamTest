@@ -53,7 +53,7 @@
 
   <!--<depend>turtlebot3_msgs</depend>-->
   <!--<depend>turtlebot3_navigation</depend>-->
-  <depend>explore_lite</depend> <!--one from m-explore package-->
+  <depend>ast_explore_lite</depend> <!--one from m-explore package-->
 
 
   <!-- Use build_depend for packages you need at compile time: -->
