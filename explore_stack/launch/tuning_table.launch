@@ -19,12 +19,6 @@
     <arg name="world_name" default="ss_hq4"/>
     <!--<arg name="world_name" default="office"/>-->
 
-    <!--<group>-->
-        <!---->
-    <!--</group>-->
-    <!--<arg name="x_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
-    <!--<arg name="y_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
-    <!--<arg name="z_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>-->
     <arg name="x_pos" default="-3.0" if="$(eval world_name == 'turtlebot3_house')"/>
     <arg name="y_pos" default="1.0" if="$(eval world_name == 'turtlebot3_house')"/>
     <arg name="z_pos" default="0.0" if="$(eval world_name == 'turtlebot3_house')"/>
@@ -85,10 +79,5 @@
     </include>
     <!-- /move_base -->
 
-
-    <!--<include file="$(find explore_stack)/launch/explore_lite_revised.launch">-->
-        <!--TODO parameters tuning if needed-->
-        <!--TODO name and dir for map save-->
-    <!--</include>-->
 
 </launch>

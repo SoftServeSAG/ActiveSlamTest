@@ -3,14 +3,17 @@
 
     <arg name="cmd_vel_topic" default="/cmd_vel" />
     <arg name="odom_topic" default="odom" />
+    <arg name="launch_rviz" default='false'/>
 
 
-    <!--<node name="rviz_2"-->
-          <!--pkg="rviz"-->
-          <!--type="rviz"-->
-          <!--respawn="true"-->
-          <!--args="-d $(find explore_stack)/rviz/move_base_tuning.rviz"-->
-    <!--/>-->
+    <group if="$(arg launch_rviz)">
+    <node name="rviz"
+          pkg="rviz"
+          type="rviz"
+          respawn="true"
+          args="-d $(find explore_stack)/rviz/move_base_tuning.rviz"
+    />
+    </group>
 
 
     <!-- move_base -->

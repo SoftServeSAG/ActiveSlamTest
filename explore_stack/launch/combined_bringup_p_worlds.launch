@@ -3,7 +3,7 @@
 
 
 
-    <arg name="cmd_vel_topic" default="/cmd_vel" />
+    <arg name="cmd_vel_topic" default="cmd_vel" />
     <arg name="odom_topic" default="odom" />
 
 
@@ -84,8 +84,6 @@
 
 
     <include file="$(find explore_stack)/launch/explore_lite_revised.launch">
-        <!--TODO parameters tuning if needed-->
-        <!--TODO name and dir for map save-->
     </include>
     
 

@@ -5,7 +5,7 @@
           respawn="false"
           output="screen"
           launch-prefix="xterm -geometry 93x31+100+350 -e">
-        <!--todo manage terminal postion a little bit better-->
+        <!--todo manage terminal postion better-->
 
         <rosparam file="$(find explore_lite_revised)/param/explore_lite_revised.yaml" command="load" />
         <rosparam file="$(find explore_stack)/param/explore_lite_revised.yaml" command="load" />
