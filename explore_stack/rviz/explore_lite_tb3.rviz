@@ -351,7 +351,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /explore_lite_revised/frontiers
+      Marker Topic: /ast_explore_lite/frontiers
       Name: MarkerArray
       Namespaces:
         frontiers: true

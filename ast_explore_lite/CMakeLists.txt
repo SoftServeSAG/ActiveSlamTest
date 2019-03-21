@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(explore_lite_revised)
+project(ast_explore_lite)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -48,18 +48,18 @@ include_directories(
   include
 )
 
-add_executable(explore_lite_revised
+add_executable(ast_explore_lite
   src/costmap_client.cpp
   src/explore.cpp
   src/frontier_search.cpp)
-add_dependencies(explore_lite_revised ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(explore_lite_revised ${catkin_LIBRARIES})
+add_dependencies(ast_explore_lite ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(ast_explore_lite ${catkin_LIBRARIES})
 
 #############
 ## Install ##
 #############
 # install nodes
-install(TARGETS explore_lite_revised
+install(TARGETS ast_explore_lite
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

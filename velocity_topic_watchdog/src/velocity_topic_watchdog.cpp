@@ -4,6 +4,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include "velocity_topic_watchdog/velocity_topic_watchdog.h"
 
 namespace velocity_topic_watchdog{
 
@@ -15,6 +16,7 @@ static const double DEFAULT_WATCHDOG_TIMEOUT (3.0);
 ros::Duration *watchdog_duration;
 double watchdog_timeout_param (3.0);
 
+// Once timer since last message runs out callback activates
 void watchdogTimerCallback(const ros::TimerEvent &timerEvent){
     ROS_INFO_STREAM("velocity_topic_watchdog activated!");
     pub_ptr->publish(*stop_msg_ptr);
@@ -25,6 +27,7 @@ void watchdogTimerCallback(const ros::TimerEvent &timerEvent){
 void initGlobals(ros::NodeHandle &nh){
     watchdog_duration = new ros::Duration(watchdog_timeout_param);
 
+    // initializing stop_msg fields
     stop_msg_ptr = new geometry_msgs::Twist();
     stop_msg_ptr->linear.x = 0;
     stop_msg_ptr->linear.y = 0;
@@ -64,6 +67,7 @@ void commandVelocityReceived(const geometry_msgs::Twist &msgIn){
 
 
 } // namespace velocity_topic_watchdog
+
 int main(int argc, char** argv){
     ros::init(argc, argv, "velocity_topic_watchdog");
     ros::NodeHandle nh;

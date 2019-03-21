@@ -1,0 +1,5 @@
+<launch>
+<node pkg="ast_explore_lite" type="ast_explore_lite" respawn="false" name="explore" output="screen">
+  <rosparam file="$(find ast_explore_lite)/param/ast_explore_lite.yaml" command="load" />
+</node>
+</launch>

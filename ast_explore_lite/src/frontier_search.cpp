@@ -20,8 +20,7 @@ using costmap_2d::LETHAL_OBSTACLE;
 using costmap_2d::NO_INFORMATION;
 using costmap_2d::FREE_SPACE;
 
-
-inline double angular_vector_distance(const double x1,const double y1,const double x2,const double y2){
+inline double angular_vector_distance(const double x1, const double y1,const double x2,const double y2){
     return std::abs( atan2(y1, x1) - atan2(y2, x2) ) * 180.0 / M_PI;
 }
 inline double angular_vector_distance(const geometry_msgs::Point &v1,const  geometry_msgs::Point &v2) {

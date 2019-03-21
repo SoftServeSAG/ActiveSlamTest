@@ -80,7 +80,7 @@
     <!-- /move_base -->
 
 
-    <include file="$(find explore_stack)/launch/explore_lite_revised.launch">
+    <include file="$(find explore_stack)/launch/ast_explore_lite.launch">
     </include>
     
 
