@@ -1,4 +1,3 @@
-#include <explore/frontier_search.h>
 
 #include <mutex>
 
@@ -6,11 +5,14 @@
 #include <costmap_2d/costmap_2d.h>
 #include <geometry_msgs/Point.h>
 
-#include <explore/costmap_tools.h>
-
 #include <boost/geometry.hpp>
 #include <geometry_msgs/Vector3.h>
 #include <cmath>
+
+#include <explore/costmap_tools.h>
+#include <explore/frontier_search.h>
+#include <explore/explore_utils.h>
+
 
 namespace frontier_exploration
 {
@@ -34,21 +36,20 @@ inline double angular_vector_distance(const geometry_msgs::Point &p1,const  geom
 inline geometry_msgs::Point getClosestPointTo(const std::vector<geometry_msgs::Point> &distance_vectors, const geometry_msgs::Point &goal){
     auto min_elem_iter = std::min_element(distance_vectors.begin(), distance_vectors.end(),
             [](const geometry_msgs::Point &p1,const geometry_msgs::Point &p2)
-    {return p1.x + p1.y < p2.x + p2.y;}); //using Manhatten distance
+            {return p1.x + p1.y < p2.x + p2.y;}); //using Manhatten distance
     return *min_elem_iter;
 }
 
-geometry_msgs::Point Frontier::toReferenceFrame(const geometry_msgs::Point &pt_in_absolute_frame){
-    geometry_msgs::Point pt_in_reference_frame;
-    pt_in_reference_frame.x = pt_in_absolute_frame.x - reference_robot_pose.x;
-    pt_in_reference_frame.y = pt_in_absolute_frame.y - reference_robot_pose.y;
-    return  pt_in_reference_frame;
+inline geometry_msgs::Point Frontier::toReferenceFrame(const geometry_msgs::Point &pt_in_absolute_frame){
+    return makePointMsg(
+            pt_in_absolute_frame.x - reference_robot_pose.x,
+            pt_in_absolute_frame.y - reference_robot_pose.y,
+            0);
 }
-geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame){
-    geometry_msgs::Point pt_in_absolute_frame;
-    pt_in_absolute_frame.x = pt_in_reference_frame.x + reference_robot_pose.x;
-    pt_in_absolute_frame.y = pt_in_reference_frame.y + reference_robot_pose.y;
-    return  pt_in_absolute_frame;
+inline geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame){
+    return makePointMsg(pt_in_reference_frame.x + reference_robot_pose.x,
+                        pt_in_reference_frame.y + reference_robot_pose.y,
+                        0);
 }
 
 FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
@@ -105,13 +106,15 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
 
     std::vector<Frontier> FrontierSearch::splitFrontier(Frontier& fr){
         Frontier fr1, fr2;
-
         std::vector<Frontier> frontiers{fr1, fr2}, vector_buf, res;
         size_t splits = frontiers.size();
         size_t current_element {0}, split_size {fr.vectors_to_points.size() / splits};
         for (auto& this_fr: frontiers){
             this_fr.reference_robot_pose = fr.reference_robot_pose;
-            this_fr.vectors_to_points = std::vector<geometry_msgs::Point>(fr.vectors_to_points.begin() + current_element, fr.vectors_to_points.begin() + current_element + split_size);
+            this_fr.vectors_to_points = std::vector<geometry_msgs::Point>(
+                    fr.vectors_to_points.begin() + current_element,
+                    fr.vectors_to_points.begin() + current_element + split_size);
+
             current_element += split_size;
             this_fr.interpolated_line = {this_fr.vectors_to_points.front(), this_fr.vectors_to_points.back()};
             this_fr.centroid = *(this_fr.vectors_to_points.begin() + split_size / 2);  // not true centroid, but who cares... //todo maybe
@@ -326,6 +329,9 @@ bool FrontierSearch::is_hidden(frontier_exploration::Frontier &fr, double thresh
 
 double FrontierSearch::frontierCost(const Frontier& frontier)
 {
+    // TODO add rotation angle heuristics
+    // TODO geodesial distance heuristics
+    // todo add wall reachability for successfull mapping
   return (potential_scale_ * frontier.min_distance
   // * costmap_->getResolution()
           )

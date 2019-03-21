@@ -5,14 +5,14 @@
 
 namespace frontier_exploration
 {
-/**
+
+    /**
  * @brief Represents a frontier
  *
  */
 
 struct Frontier {
-    //todo make a class of it, make methods static methods of class
-//    std::uint32_t size{0};
+    //todo improve this struct functionality
   double min_distance{std::numeric_limits<double>::infinity()};
   double cost{0.0};
   geometry_msgs::Point initial;
@@ -25,6 +25,7 @@ struct Frontier {
     geometry_msgs::Point toReferenceFrame(const geometry_msgs::Point &pt);
     geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
     bool hidden{false};
+    Frontier() = default;
 };
 
 /**
