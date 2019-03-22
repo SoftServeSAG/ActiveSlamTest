@@ -41,8 +41,7 @@ private:
     ros::Timer watchdog_timer_;
     ros::Duration watchdog_duration_;
 
-
-    /*!
+/*!
  * Reads and verifies the ROS parameters.
  * @return true if successful.
  */
@@ -54,6 +53,7 @@ private:
  * @return if this message corresponds to steady state (all fields are zeros)
  */
 bool isZeroSpeed(const geometry_msgs::Twist &msgIn) const;
+
 /*!
  * @brief updates state of a watchdog upon receiving message
  * resets watchdog timer
@@ -87,7 +87,12 @@ geometry_msgs::Twist makeTwistMsg(
         double ay = 0.0,
         double az = 0.0);
 
-
+/*!
+ * overloaded function
+ * @param speed values of speed on all axes, packed in single container
+ * @return Twist message built
+ */
+geometry_msgs::Twist makeTwistMsg(std::vector<double> speed);
 };
 
 } // namespace velocity_topic_watchdog

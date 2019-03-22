@@ -26,6 +26,13 @@ geometry_msgs::Twist VelocityTopicWatchdog::makeTwistMsg(
     twist.angular.z = az;
     return twist;
 }
+geometry_msgs::Twist VelocityTopicWatchdog::makeTwistMsg(std::vector<double> speed) {
+    geometry_msgs::Twist twist = geometry_msgs::Twist();
+    ROS_ASSERT_MSG(speed.size() == 6,
+            "Twist message requires exactly 6 values to instantiate, got [%lu]", speed.size());
+    twist = makeTwistMsg(speed[0], speed[1], speed[2], speed[3], speed[4], speed[5]);
+    return twist;
+}
 
 VelocityTopicWatchdog::VelocityTopicWatchdog(ros::NodeHandle &nh)
 :
