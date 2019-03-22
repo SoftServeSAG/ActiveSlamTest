@@ -4,13 +4,35 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <velocity_topic_watchdog/velocity_topic_watchdog.h>
+
 #include "velocity_topic_watchdog/velocity_topic_watchdog.h"
+#include <memory>
+
+
+geometry_msgs::TwistPtr VelocityTopicWatchdog::makeTwistMsg(
+        const double lx,
+        const double ly,
+        const double lz,
+        const double ax,
+        const double ay,
+        const double az) {
+    geometry_msgs::TwistPtr twistPtr = geometry_msgs::TwistPtr();
+    twistPtr->linear.x = lx;
+    twistPtr->linear.y = ly;
+    twistPtr->linear.z = lz;
+    twistPtr->angular.x = ax;
+    twistPtr->angular.y = ay;
+    twistPtr->angular.z = az;
+    return twistPtr;
+}
+
 
 namespace velocity_topic_watchdog{
 
-ros::Publisher *pub_ptr;
-ros::Timer *global_timer;
-geometry_msgs::Twist *stop_msg_ptr;
+    ros::Publisher *pub_ptr;
+    ros::Timer *global_timer;
+    geometry_msgs::Twist *stop_msg_ptr;
 
 static const double DEFAULT_WATCHDOG_TIMEOUT (3.0);
 ros::Duration *watchdog_duration;
