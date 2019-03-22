@@ -5,12 +5,14 @@
 #ifndef PROJECT_VELOCITY_TOPIC_WATCHDOG_H
 #define PROJECT_VELOCITY_TOPIC_WATCHDOG_H
 
+#include <geometry_msgs/Twist.h>
+
+namespace velocity_topic_watchdog{
 
 class VelocityTopicWatchdog{
-//VelocityTopicWatchdog(ros::NodeHandle &nh);
-explicit VelocityTopicWatchdog(ros::NodeHandle &nh);
-~VelocityTopicWatchdog() = default;
-
+public:
+    explicit VelocityTopicWatchdog(ros::NodeHandle &nh);
+    ~VelocityTopicWatchdog() = default;
 
 private:
     geometry_msgs::Twist makeTwistMsg(
@@ -22,15 +24,14 @@ private:
             double az = 0.0);
 
     ros::NodeHandle& nh_;
-    std::string resolved_node_name;
+    std::string resolved_node_name_;
+    std::string subscriberTopic_;
     ros::Publisher publisher_;
-    std::string subscriberTopic_ = "cmd_vel";
     ros::Subscriber subscriber_;
     ros::Timer watchdog_timer_;
     geometry_msgs::Twist stop_msg_;
     ros::Duration watchdog_duration_;
-
-    double watchdog_timeout_param_ = 3.0; // default
+    double watchdog_timeout_param_;
 
     /*!
  * Reads and verifies the ROS parameters.
@@ -42,5 +43,8 @@ void commandVelocityReceived(const geometry_msgs::Twist &msgIn);
 void watchdogTimerCallback(const ros::TimerEvent &timerEvent);
 
 };
+
+} // namespace velocity_topic_watchdog
+
 
 #endif //PROJECT_VELOCITY_TOPIC_WATCHDOG_H
