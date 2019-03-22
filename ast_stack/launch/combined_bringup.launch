@@ -1,8 +1,6 @@
 <launch>
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
 
-
-
     <arg name="cmd_vel_topic" default="/cmd_vel" />
     <arg name="odom_topic" default="odom" />
 
@@ -18,7 +16,6 @@
     <!--GAZEBO-->
     <!--<arg name="world_name" default="turtlebot3_house"/>-->
     <arg name="world_name" default="turtlebot3_stage_3"/>
-
 
     <arg name="x_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>
     <arg name="y_pos" default="0.0" unless="$(eval world_name == 'turtlebot3_house')"/>
@@ -72,7 +69,7 @@
 
 
     <!-- move_base -->
-    <include file="$(find ast_move_base)/launch/move_base.launch">
+    <include file="$(find ss_turtle3_move_base)/launch/move_base.launch">
         <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
         <arg name="cmd_vel_topic" default="/cmd_vel" />
         <arg name="odom_topic" default="odom" />
@@ -83,6 +80,5 @@
     <include file="$(find ast_stack)/launch/ast_explore_lite.launch">
     </include>
     
-
 
 </launch>
