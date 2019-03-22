@@ -8,21 +8,21 @@
 #include <memory>
 
 
-geometry_msgs::TwistPtr VelocityTopicWatchdog::makeTwistMsg(
+geometry_msgs::Twist VelocityTopicWatchdog::makeTwistMsg(
         const double lx,
         const double ly,
         const double lz,
         const double ax,
         const double ay,
         const double az) {
-    geometry_msgs::TwistPtr twistPtr = geometry_msgs::TwistPtr();
-    twistPtr->linear.x = lx;
-    twistPtr->linear.y = ly;
-    twistPtr->linear.z = lz;
-    twistPtr->angular.x = ax;
-    twistPtr->angular.y = ay;
-    twistPtr->angular.z = az;
-    return twistPtr;
+    geometry_msgs::Twist twist = geometry_msgs::Twist();
+    twist.linear.x = lx;
+    twist.linear.y = ly;
+    twist.linear.z = lz;
+    twist.angular.x = ax;
+    twist.angular.y = ay;
+    twist.angular.z = az;
+    return twist;
 }
 
 VelocityTopicWatchdog::VelocityTopicWatchdog(ros::NodeHandle &nh) : nh_(nh){
@@ -30,11 +30,22 @@ VelocityTopicWatchdog::VelocityTopicWatchdog(ros::NodeHandle &nh) : nh_(nh){
         ROS_ERROR("Could not read parameters.");
         ros::requestShutdown();
     }
+    resolved_node_name = ros::this_node::getName();
+
     subscriber_ = nh_.subscribe(subscriberTopic_, 1,
                                         &VelocityTopicWatchdog::commandVelocityReceived, this);
+
+    ROS_INFO_STREAM( ros::this_node::getName() <<" subscribed to topic " << subscriber_.getTopic());
     publisher_ = nh.advertise<geometry_msgs::Twist>(subscriberTopic_, 1, true); // true for 'latched'
-    const std::string &this_node_name = ros::this_node::getName();
-    ROS_INFO_STREAM("Successfully launched node. [" << this_node_name << "]");
+    ROS_INFO_STREAM(resolved_node_name <<" advertised publisher to " << publisher_.getTopic());
+
+    stop_msg_ = makeTwistMsg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    watchdog_duration_ = ros::Duration(watchdog_timeout_param_);
+    watchdog_timer_ = ros::Timer(nh.createTimer(watchdog_duration_, &VelocityTopicWatchdog::watchdogTimerCallback, this));
+    ROS_INFO_STREAM("watchdog time set to " << watchdog_timeout_param_ << " [sec]");
+    watchdog_timer_.start();
+
+    ROS_INFO_STREAM("Successfully launched node. [" << resolved_node_name << "]");
 }
 
 bool VelocityTopicWatchdog::readParameters() {
@@ -53,8 +64,8 @@ void VelocityTopicWatchdog::commandVelocityReceived(const geometry_msgs::Twist &
                                     msgIn.angular.x <<" " << msgIn.angular.y <<" " << msgIn.angular.z
     );
     if ( !isZeroSpeed(msgIn) ) {
-        global_timer->setPeriod(*watchdog_duration, true);
-        global_timer->start();
+        watchdog_timer_.setPeriod(watchdog_duration_, true);
+        watchdog_timer_.start();
         ROS_DEBUG("timer reset");
     }
 }
@@ -67,6 +78,15 @@ bool VelocityTopicWatchdog::isZeroSpeed(const geometry_msgs::Twist &msgIn){
            msgIn.linear.x != 0  &&
            msgIn.linear.y != 0 ;
 }
+// Once timer since last message runs out callback activates
+void VelocityTopicWatchdog::watchdogTimerCallback(const ros::TimerEvent &timerEvent) {
+    ROS_INFO_STREAM("velocity_topic_watchdog activated!");
+    publisher_.publish(stop_msg_);
+    ROS_INFO_STREAM("STOP MSG PUBLISHED to [" << publisher_.getTopic() << "]");
+    watchdog_timer_.stop(); // resets timer
+}
+
+
 
 namespace velocity_topic_watchdog{
 
@@ -145,7 +165,6 @@ int main(int argc, char** argv){
     velocity_topic_watchdog::initGlobals(nh);
 
 
-
     const std::string &default_velocity_topic = "cmd_vel";
     const std::string &this_node_name = ros::this_node::getName();
     ROS_INFO_STREAM(this_node_name << " created");
@@ -162,8 +181,4 @@ int main(int argc, char** argv){
     }
 
     ROS_WARN_STREAM(this_node_name <<" SHUT_DOWN ");
-    delete velocity_topic_watchdog::pub_ptr;
-    delete velocity_topic_watchdog::global_timer;
-    delete velocity_topic_watchdog::stop_msg_ptr;
-    delete velocity_topic_watchdog::watchdog_duration;
 }

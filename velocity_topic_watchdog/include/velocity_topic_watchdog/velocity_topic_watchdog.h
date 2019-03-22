@@ -8,12 +8,12 @@
 
 class VelocityTopicWatchdog{
 //VelocityTopicWatchdog(ros::NodeHandle &nh);
-VelocityTopicWatchdog(ros::NodeHandle &nh);
- ~VelocityTopicWatchdog();
+explicit VelocityTopicWatchdog(ros::NodeHandle &nh);
+~VelocityTopicWatchdog() = default;
 
 
 private:
-    geometry_msgs::TwistPtr makeTwistMsg(
+    geometry_msgs::Twist makeTwistMsg(
             double lx = 0.0,
             double ly = 0.0,
             double lz = 0.0,
@@ -22,16 +22,15 @@ private:
             double az = 0.0);
 
     ros::NodeHandle& nh_;
+    std::string resolved_node_name;
     ros::Publisher publisher_;
-    //! ROS topic name to subscribe to.
     std::string subscriberTopic_ = "cmd_vel";
-    //! ROS topic subscriber.
     ros::Subscriber subscriber_;
-    ros::Timer *global_timer;
-    geometry_msgs::Twist *stop_msg_ptr;
-    ros::Duration *watchdog_duration;
+    ros::Timer watchdog_timer_;
+    geometry_msgs::Twist stop_msg_;
+    ros::Duration watchdog_duration_;
 
-    double watchdog_timeout_param_ = 3.0;
+    double watchdog_timeout_param_ = 3.0; // default
 
     /*!
  * Reads and verifies the ROS parameters.
