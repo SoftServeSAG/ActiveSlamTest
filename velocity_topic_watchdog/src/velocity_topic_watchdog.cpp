@@ -30,6 +30,11 @@ VelocityTopicWatchdog::VelocityTopicWatchdog(ros::NodeHandle &nh) : nh_(nh){
         ROS_ERROR("Could not read parameters.");
         ros::requestShutdown();
     }
+    subscriber_ = nh_.subscribe(subscriberTopic_, 1,
+                                        &VelocityTopicWatchdog::commandVelocityReceived, this);
+    publisher_ = nh.advertise<geometry_msgs::Twist>(subscriberTopic_, 1, true); // true for 'latched'
+    const std::string &this_node_name = ros::this_node::getName();
+    ROS_INFO_STREAM("Successfully launched node. [" << this_node_name << "]");
 }
 
 bool VelocityTopicWatchdog::readParameters() {
@@ -38,6 +43,29 @@ bool VelocityTopicWatchdog::readParameters() {
     ROS_ASSERT_MSG(watchdog_timeout_param_ > 0,
             "Watchdog_timeout should be positive.  Value = %f", watchdog_timeout_param_);
     return status;
+}
+
+void VelocityTopicWatchdog::commandVelocityReceived(const geometry_msgs::Twist &msgIn) {
+    ROS_DEBUG_STREAM(
+            "velocity msg received" << " Linear= " <<
+                                    msgIn.linear.x <<" " << msgIn.linear.y <<" " << msgIn.linear.z <<
+                                    " Angular= " <<
+                                    msgIn.angular.x <<" " << msgIn.angular.y <<" " << msgIn.angular.z
+    );
+    if ( !isZeroSpeed(msgIn) ) {
+        global_timer->setPeriod(*watchdog_duration, true);
+        global_timer->start();
+        ROS_DEBUG("timer reset");
+    }
+}
+
+bool VelocityTopicWatchdog::isZeroSpeed(const geometry_msgs::Twist &msgIn){
+    return msgIn.angular.z != 0 &&
+           msgIn.linear.x != 0 &&
+           msgIn.angular.x != 0 &&
+           msgIn.angular.y != 0 &&
+           msgIn.linear.x != 0  &&
+           msgIn.linear.y != 0 ;
 }
 
 namespace velocity_topic_watchdog{

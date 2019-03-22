@@ -21,10 +21,12 @@ private:
             double ay = 0.0,
             double az = 0.0);
 
-    ros::NodeHandle nh_;
-    ros::Publisher *pub_ptr;
+    ros::NodeHandle& nh_;
+    ros::Publisher publisher_;
     //! ROS topic name to subscribe to.
     std::string subscriberTopic_ = "cmd_vel";
+    //! ROS topic subscriber.
+    ros::Subscriber subscriber_;
     ros::Timer *global_timer;
     geometry_msgs::Twist *stop_msg_ptr;
     ros::Duration *watchdog_duration;
