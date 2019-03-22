@@ -5,9 +5,10 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <velocity_topic_watchdog/VelocityTopicWatchdog.hpp>
-#include <memory>
 
 namespace velocity_topic_watchdog{
+
+
 
 geometry_msgs::Twist VelocityTopicWatchdog::makeTwistMsg(
         const double lx,
@@ -76,7 +77,7 @@ void VelocityTopicWatchdog::commandVelocityReceived(const geometry_msgs::Twist &
     }
 }
 
-bool VelocityTopicWatchdog::isZeroSpeed(const geometry_msgs::Twist &msgIn){
+bool VelocityTopicWatchdog::isZeroSpeed(const geometry_msgs::Twist &msgIn) const{
     return msgIn.angular.z != 0 &&
            msgIn.linear.x != 0 &&
            msgIn.angular.x != 0 &&
@@ -84,6 +85,8 @@ bool VelocityTopicWatchdog::isZeroSpeed(const geometry_msgs::Twist &msgIn){
            msgIn.linear.x != 0  &&
            msgIn.linear.y != 0 ;
 }
+
+
 // Once timer since last message runs out callback activates
 void VelocityTopicWatchdog::watchdogTimerCallback(const ros::TimerEvent &timerEvent) {
     ROS_INFO_STREAM("velocity_topic_watchdog activated!");

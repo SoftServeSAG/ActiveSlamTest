@@ -133,7 +133,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(velocity_topic_watchdog src/VelocityTopicWatchdog.cpp
+add_executable(
+        velocity_topic_watchdog src/VelocityTopicWatchdog.cpp
         include/velocity_topic_watchdog/VelocityTopicWatchdog.hpp
         src/velocity_watchdog_node.cpp)
 
@@ -148,8 +149,9 @@ add_executable(velocity_topic_watchdog src/VelocityTopicWatchdog.cpp
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(velocity_topic_watchdog
-   ${catkin_LIBRARIES}
+ target_link_libraries(
+         velocity_topic_watchdog
+         ${catkin_LIBRARIES}
  )
 
 #############
