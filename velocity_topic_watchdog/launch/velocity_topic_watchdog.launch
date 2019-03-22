@@ -8,4 +8,5 @@
         <remap from="cmd_vel" to="$(arg velocity_topic)"/>
     </node>
     <param name="watchdog_patience" value="2.0" type="double"/>
+    <param name="subscriber_topic" value="cmd_vel"/>
 </launch>

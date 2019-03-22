@@ -5,8 +5,6 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <velocity_topic_watchdog/velocity_topic_watchdog.h>
-
-#include "velocity_topic_watchdog/velocity_topic_watchdog.h"
 #include <memory>
 
 
@@ -27,6 +25,20 @@ geometry_msgs::TwistPtr VelocityTopicWatchdog::makeTwistMsg(
     return twistPtr;
 }
 
+VelocityTopicWatchdog::VelocityTopicWatchdog(ros::NodeHandle &nh) : nh_(nh){
+    if (!readParameters()) {
+        ROS_ERROR("Could not read parameters.");
+        ros::requestShutdown();
+    }
+}
+
+bool VelocityTopicWatchdog::readParameters() {
+    bool status = (!nh_.getParam("subscriber_topic", subscriberTopic_));
+    status &= (!nh_.getParam("watchdog_patience", watchdog_timeout_param_));
+    ROS_ASSERT_MSG(watchdog_timeout_param_ > 0,
+            "Watchdog_timeout should be positive.  Value = %f", watchdog_timeout_param_);
+    return status;
+}
 
 namespace velocity_topic_watchdog{
 
