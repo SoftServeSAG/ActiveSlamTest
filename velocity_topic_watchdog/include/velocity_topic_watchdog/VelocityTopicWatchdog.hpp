@@ -1,13 +1,11 @@
 //
-// Created by user on 3/21/19.
+// This package creates node which tracks timeout for the cmd_vel message
 //
-
 #ifndef PROJECT_VELOCITY_TOPIC_WATCHDOG_H
 #define PROJECT_VELOCITY_TOPIC_WATCHDOG_H
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
-
 
 namespace velocity_topic_watchdog{
 
@@ -96,6 +94,5 @@ geometry_msgs::Twist makeTwistMsg(std::vector<double> speed);
 };
 
 } // namespace velocity_topic_watchdog
-
 
 #endif //PROJECT_VELOCITY_TOPIC_WATCHDOG_H

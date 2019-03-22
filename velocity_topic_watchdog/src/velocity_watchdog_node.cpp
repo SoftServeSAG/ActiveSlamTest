@@ -1,5 +1,5 @@
 //
-// Created by user on 3/22/19.
+// This package creates node which tracks timeout for the cmd_vel message
 //
 #include <ros/ros.h>
 #include "velocity_topic_watchdog/VelocityTopicWatchdog.hpp"
@@ -12,6 +12,6 @@ int main(int argc, char** argv){
 
     ros::spin();
 
-    ROS_WARN_STREAM("velocity_topic_watchdog node " <<" SHUT_DOWN ");
+    ROS_WARN_STREAM("velocity_topic_watchdog node " << " SHUT_DOWN ");
     return 0;
 }

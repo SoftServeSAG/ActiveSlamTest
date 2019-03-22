@@ -1,20 +1,16 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>velocity_topic_watchdog</name>
-  <version>1.0.0</version>
+  <version>0.0.1</version>
   <description>The velocity_topic_watchdog package. Publish stop message to velocity control topic</description>
 
   <author email="dkushn@softserveinc.com">Dmytro Kushnir</author>
   <maintainer email="dkushn@softserveinc.com">Dmytro Kushnir</maintainer>
 
-  <license>TODO</license>
-
+  <license>GPL-3.0</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>geometry_msgs</depend>
   <depend>roscpp</depend>
-  <depend>rospy</depend>
 
-  <export>
-  </export>
 </package>

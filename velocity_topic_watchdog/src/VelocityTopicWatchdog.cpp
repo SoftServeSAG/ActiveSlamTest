@@ -9,7 +9,6 @@
 namespace velocity_topic_watchdog{
 
 
-
 geometry_msgs::Twist VelocityTopicWatchdog::makeTwistMsg(
         const double lx,
         const double ly,
@@ -32,6 +31,14 @@ geometry_msgs::Twist VelocityTopicWatchdog::makeTwistMsg(std::vector<double> spe
             "Twist message requires exactly 6 values to instantiate, got [%lu]", speed.size());
     twist = makeTwistMsg(speed[0], speed[1], speed[2], speed[3], speed[4], speed[5]);
     return twist;
+}
+
+bool VelocityTopicWatchdog::readParameters() {
+    bool status = (nh_.getParam("subscriber_topic", subscriberTopic_));
+    status &= (nh_.getParam("watchdog_patience", watchdog_timeout_param_));
+    ROS_ASSERT_MSG(watchdog_timeout_param_ > 0,
+                   "Watchdog_timeout should be positive.  Value = %f", watchdog_timeout_param_);
+    return status;
 }
 
 VelocityTopicWatchdog::VelocityTopicWatchdog(ros::NodeHandle &nh)
@@ -60,14 +67,6 @@ stop_msg_(makeTwistMsg(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     watchdog_timer_.start();
 
     ROS_INFO_STREAM("Successfully launched node. [" << resolved_node_name_ << "]");
-}
-
-bool VelocityTopicWatchdog::readParameters() {
-    bool status = (nh_.getParam("subscriber_topic", subscriberTopic_));
-    status &= (nh_.getParam("watchdog_patience", watchdog_timeout_param_));
-    ROS_ASSERT_MSG(watchdog_timeout_param_ > 0,
-            "Watchdog_timeout should be positive.  Value = %f", watchdog_timeout_param_);
-    return status;
 }
 
 void VelocityTopicWatchdog::commandVelocityReceived(const geometry_msgs::Twist &msgIn) {
