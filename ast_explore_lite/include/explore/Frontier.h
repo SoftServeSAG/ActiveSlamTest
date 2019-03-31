@@ -21,6 +21,7 @@ namespace frontier_exploration {
         int sparsify_k_times{1};
         double max_angular_size{10.0};
         double hidden_distance_threshold;
+        bool presorted = false;
     };
 
     struct Frontier {
@@ -49,8 +50,9 @@ namespace frontier_exploration {
         geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
         static std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierByViewAngle(
                 frontier_exploration::Frontier &fr);
-        static std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(Frontier &fr,
-                                                                                             geometry_msgs::Point &reference_robot);
+        // unused
+        static std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(
+                frontier_exploration::Frontier &fr);
 
         static std::vector<Frontier> splitFrontier(Frontier& fr, double max_angular_size);
         static bool is_hidden(frontier_exploration::Frontier &fr, double thresh_distance);
