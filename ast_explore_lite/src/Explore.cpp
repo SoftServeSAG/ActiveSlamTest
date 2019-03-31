@@ -145,7 +145,7 @@ void Explore::visualizeFrontiers(
       m.scale.x = 0.2;
       m.scale.y = 0.2;
       m.scale.z = 0.2;
-      m.points = {frontier.interpolated_line.first, frontier.centroid, frontier.interpolated_line.second};
+      m.points = {frontier.interpolated_line.first, frontier.middle, frontier.interpolated_line.second};
       m.color = *red;
       m.header.stamp = ros::Time::now();
       markers.push_back(m);
@@ -156,7 +156,7 @@ void Explore::visualizeFrontiers(
     m.scale.x = 0.1;
     m.scale.y = 0.1;
     m.scale.z = 0.1;
-    m.points = {frontier.interpolated_line.first, frontier.centroid, frontier.interpolated_line.second};
+    m.points = {frontier.interpolated_line.first, frontier.middle, frontier.interpolated_line.second};
     m.color = *red;
     m.header.stamp = ros::Time::now();
     markers.push_back(m);
@@ -176,7 +176,7 @@ void Explore::visualizeFrontiers(
     m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     ++m.id;
     m.text = "M";
-    m.pose.position = frontier.centroid;
+    m.pose.position = frontier.middle;
     m.scale.x = 0.2;
     m.scale.y = 0.2;
     m.scale.z = 0.2;
@@ -210,7 +210,7 @@ void Explore::visualizeFrontiers(
         i.y += frontier.reference_robot_pose.y;
     }
     m.points = translated_vector;
-    if (goalOnBlacklist(frontier.centroid))
+    if (goalOnBlacklist(frontier.middle))
       m.color = *red;
     else
       m.color = frontier.hidden ? *green : *blue;
@@ -265,7 +265,7 @@ void Explore::makePlan()
 
   auto frontier = std::find_if_not(hidden_frontiers.begin(), hidden_frontiers.end(),
                                        [this](const frontier_exploration::Frontier& f) {
-                                           return goalOnBlacklist(f.centroid);
+                                           return goalOnBlacklist(f.middle);
                                        });
   // todo REFROMAT FUNCTION
   if (frontier == hidden_frontiers.end()) {
@@ -274,7 +274,7 @@ void Explore::makePlan()
     frontier =
             std::find_if_not(frontiers.begin(), frontiers.end(),
                              [this](const frontier_exploration::Frontier& f) {
-                                 return goalOnBlacklist(f.centroid);
+                                 return goalOnBlacklist(f.middle);
                              }); // KD as frontiers stored sorted by their cost shold do the thing...
     if (frontier == frontiers.end()) {
       stop();
@@ -282,7 +282,7 @@ void Explore::makePlan()
     }
   }
 
-  geometry_msgs::Point target_position = frontier->centroid;
+  geometry_msgs::Point target_position = frontier->middle;
 
   // time out if we are not making any progress
   bool same_goal = prev_goal_ == target_position;
