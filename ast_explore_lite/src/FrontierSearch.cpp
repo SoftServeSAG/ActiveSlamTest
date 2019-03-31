@@ -121,7 +121,7 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   // record initial contact point for frontier
   unsigned int ix, iy;
   costmap_->indexToCells(initial_cell, ix, iy);
-  costmap_->mapToWorld(ix, iy, output.initial.x, output.initial.y);
+  //costmap_->mapToWorld(ix, iy, output.initial.x, output.initial.y);
 
   // push initial gridcell onto queue
   std::queue<unsigned int> bfs;
@@ -140,7 +140,6 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   fr_par.min_frontier_size = this->min_frontier_size_;
   fr_par.hidden_distance_threshold = this->hidden_distance_threshold_;
 
-
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
     bfs.pop();
@@ -155,29 +154,21 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
         costmap_->indexToCells(nbr, mx, my);
         costmap_->mapToWorld(mx, my, wx, wy);
 
-        // leaving only each n-th point
-          geometry_msgs::Point reference_scope_point = makePointMsg(
-                  wx - reference_x,
-                  wy - reference_y);
-          fr_par.vectors_to_points.push_back(reference_scope_point);
-          fr_par.middle.x += wx; // map frame coords
-          fr_par.middle.y += wy;
+        fr_par.vectors_to_points.push_back(makePointMsg(
+                wx - reference_x,
+                wy - reference_y));
 
         // add to queue for breadth first search
         bfs.push(nbr);
       }
     }
   }
-  // average out frontier centroid
-    fr_par.middle.x /= fr_par.vectors_to_points.size();
-    fr_par.middle.y /= fr_par.vectors_to_points.size();
-  /*KD*/
 
-  // fixme find out why there are occuring empty frontiers (empty raw points)
-  output = Frontier(fr_par); // <--- biffurcation point
-  std::vector<Frontier> splitted_frontiers{output};
+    std::vector<Frontier> splitted_frontiers;
+    // fixme find out why there are occuring empty frontiers (empty raw points)
+if (!fr_par.vectors_to_points.empty()){
+    splitted_frontiers = {Frontier(fr_par)};
 
-if (!output.vectors_to_points.empty()){
     double degrees_distance = angular_vector_distance(output.interpolated_line.first, output.interpolated_line.second, output.reference_robot_pose);
     if (degrees_distance > this->max_frontier_angular_size_){
         ROS_INFO_STREAM("Detected wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  SPLITTING...");

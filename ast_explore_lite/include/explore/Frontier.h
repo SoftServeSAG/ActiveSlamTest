@@ -16,8 +16,6 @@ namespace frontier_exploration {
     struct FrontierParams{
         double cost{std::numeric_limits<double>::infinity()};
         geometry_msgs::Point reference_robot_pose;
-        geometry_msgs::Point initial;
-        geometry_msgs::Point middle;
         std::vector<geometry_msgs::Point> vectors_to_points;
         double min_frontier_size{3};
         int sparsify_k_times{1};
