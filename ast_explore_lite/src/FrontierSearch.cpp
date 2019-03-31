@@ -10,7 +10,7 @@
 #include <cmath>
 
 #include <explore/costmap_tools.h>
-#include <explore/frontier_search.h>
+#include <explore/FrontierSearch.h>
 #include <explore/explore_utils.h>
 
 

@@ -35,9 +35,11 @@
  *
  *********************************************************************/
 
-#include <explore/explore.h>
-
 #include <thread>
+
+
+#include "explore/Explore.h"
+
 
 inline static bool operator==(const geometry_msgs::Point& one,
                               const geometry_msgs::Point& two)
