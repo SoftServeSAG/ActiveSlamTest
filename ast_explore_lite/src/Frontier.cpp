@@ -23,10 +23,10 @@ namespace frontier_exploration{
     [](const geometry_msgs::Point &p1,const  geometry_msgs::Point &p2)
     {return atan2(p1.y, p1.x) < atan2(p2.y, p2.x);}
     );
-//        middle = geometry_msgs::Point();
-//        middle = *(vectors_to_points.begin() + vectors_to_points.size() / 2);  // not true centroid, but who cares... //todo maybe
-//
-//        middle = fromReferenceFrame(middle);
+        if(!vectors_to_points.empty()){
+            middle = *(vectors_to_points.begin() + vectors_to_points.size() / 2);
+            middle = fromReferenceFrame(middle);
+        }
     interpolated_line = Frontier::approximateFrontierByViewAngle(*this);
     hidden = is_hidden(*this,  params.hidden_distance_threshold);
     }

@@ -9,9 +9,9 @@
 #include <geometry_msgs/Vector3.h>
 #include <cmath>
 
-#include <explore/costmap_tools.h>
-#include <explore/FrontierSearch.h>
-#include <explore/explore_utils.h>
+#include "explore/costmap_tools.h"
+#include "explore/FrontierSearch.h"
+#include "explore/explore_utils.h"
 #include "explore/Frontier.h"
 
 namespace frontier_exploration
@@ -109,8 +109,6 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
 
   return frontier_list;
 }
-
-
 
 
 std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell,
