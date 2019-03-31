@@ -119,8 +119,6 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
 {
   // initialize frontier structure
   Frontier output;
-  output.middle.x = 0;
-  output.middle.y = 0;
 
   // record initial contact point for frontier
   unsigned int ix, iy;
@@ -137,9 +135,6 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   costmap_->indexToCells(reference, rx, ry);
   costmap_->mapToWorld(rx, ry, reference_x, reference_y);
 
-  output.reference_robot_pose.x = reference_x;
-  output.reference_robot_pose.y = reference_y;
-
   FrontierParams fr_par;
   fr_par.reference_robot_pose = makePointMsg(reference_x, reference_y);
   fr_par.sparsify_k_times = this->use_every_k_point_; // TODO pass those parameters during parameter reading
@@ -147,8 +142,6 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   fr_par.min_frontier_size = this->min_frontier_size_;
   fr_par.hidden_distance_threshold = this->hidden_distance_threshold_;
 
-
-size_t  cntr{0};
 
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
@@ -165,15 +158,12 @@ size_t  cntr{0};
         costmap_->mapToWorld(mx, my, wx, wy);
 
         // leaving only each n-th point
-          geometry_msgs::Point reference_scope_point;
-          reference_scope_point.x = wx - reference_x;
-          reference_scope_point.y = wy - reference_y;
+          geometry_msgs::Point reference_scope_point = makePointMsg(
+                  wx - reference_x,
+                  wy - reference_y);
           fr_par.vectors_to_points.push_back(reference_scope_point);
-        if (cntr++ % this->use_every_k_point_ == 0){
-            output.vectors_to_points.push_back(reference_scope_point);
-            output.middle.x += wx; // map frame coords
-            output.middle.y += wy;
-        }
+          fr_par.middle.x += wx; // map frame coords
+          fr_par.middle.y += wy;
 
         // add to queue for breadth first search
         bfs.push(nbr);
@@ -181,18 +171,11 @@ size_t  cntr{0};
     }
   }
   // average out frontier centroid
-  output.middle.x /= output.vectors_to_points.size();
-  output.middle.y /= output.vectors_to_points.size();
+    fr_par.middle.x /= fr_par.vectors_to_points.size();
+    fr_par.middle.y /= fr_par.vectors_to_points.size();
   /*KD*/
-  fr_par.middle = output.middle; // todo take it away
-  std::sort(output.vectors_to_points.begin(), output.vectors_to_points.end(),
-          [](const geometry_msgs::Point &p1,const  geometry_msgs::Point &p2)
-          {return atan2(p1.y, p1.x) < atan2(p2.y, p2.x);}
-          );
 
   // fixme find out why there are occuring empty frontiers (empty raw points)
-  output.interpolated_line = Frontier::approximateFrontierByViewAngle(output);
-
   output = Frontier(fr_par); // <--- biffurcation point
   std::vector<Frontier> splitted_frontiers{output};
 
