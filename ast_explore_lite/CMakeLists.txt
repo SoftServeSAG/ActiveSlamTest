@@ -52,7 +52,8 @@ add_executable(ast_explore_lite
         src/Costmap2DClient.cpp
         src/Explore.cpp
         src/FrontierSearch.cpp
-        src/Frontier.cpp)
+        src/Frontier.cpp
+        src/Visualiser.cpp)
 add_dependencies(ast_explore_lite ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ast_explore_lite ${catkin_LIBRARIES})
 
