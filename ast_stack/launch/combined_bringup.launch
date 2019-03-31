@@ -66,8 +66,6 @@
     <!--/ SLAM: Gmapping, Cartographer, Hector, Karto, Frontier_exploration, RTAB-Map -->
 
 
-
-
     <!-- move_base -->
     <include file="$(find ss_turtle3_move_base)/launch/move_base.launch">
         <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
