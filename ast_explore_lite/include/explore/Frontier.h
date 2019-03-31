@@ -15,15 +15,14 @@ namespace frontier_exploration {
  */
     struct FrontierParams{
         double cost{std::numeric_limits<double>::infinity()};
-        bool is_hidden{false};
         geometry_msgs::Point reference_robot_pose;
         geometry_msgs::Point initial;
         geometry_msgs::Point middle;
-        std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
         std::vector<geometry_msgs::Point> vectors_to_points;
         double min_frontier_size{3};
-        int left_each{1};
+        int sparsify_k_times{1};
         double max_angular_size{10.0};
+        double hidden_distance_threshold;
     };
 
     struct Frontier {
@@ -44,17 +43,7 @@ namespace frontier_exploration {
          */
         Frontier() = default;
 
-        Frontier(FrontierParams &params):
-        cost(params.cost),
-        reference_robot_pose(params.reference_robot_pose),
-        hidden(params.is_hidden),
-        initial(params.initial),
-        middle(params.middle),
-        interpolated_line(params.interpolated_line),
-        vectors_to_points(params.vectors_to_points)
-        {
-
-        }
+        explicit Frontier(FrontierParams &params);
 
     public:
         // service functions
@@ -66,6 +55,7 @@ namespace frontier_exploration {
                                                                                              geometry_msgs::Point &reference_robot);
 
         static std::vector<Frontier> splitFrontier(Frontier& fr, double max_angular_size);
+        static bool is_hidden(frontier_exploration::Frontier &fr, double thresh_distance);
 
     };
 

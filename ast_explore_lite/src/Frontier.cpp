@@ -7,6 +7,28 @@
 
 namespace frontier_exploration{
 
+    Frontier::Frontier(FrontierParams &params):
+        cost(params.cost),
+        reference_robot_pose(params.reference_robot_pose),
+        initial(params.initial),
+        middle(params.middle)
+    {
+        for (int i = 0; i < params.vectors_to_points.size(); ++i){
+        if (i % params.sparsify_k_times == 0)
+            vectors_to_points.push_back(params.vectors_to_points[i]);
+    }
+
+    // sorting by wiev angle from the robot's reference pose
+    std::sort(vectors_to_points.begin(), vectors_to_points.end(),
+    [](const geometry_msgs::Point &p1,const  geometry_msgs::Point &p2)
+    {return atan2(p1.y, p1.x) < atan2(p2.y, p2.x);}
+    );
+    interpolated_line = Frontier::approximateFrontierByViewAngle(*this);
+    hidden = is_hidden(*this,  params.hidden_distance_threshold);
+    }
+
+
+
 std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approxFrontierByPlanarFarthest(Frontier &fr,
                                                                                                      geometry_msgs::Point &reference_robot){
     double max_dist = 0.0;
@@ -58,7 +80,9 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
                             pt_in_reference_frame.y + reference_robot_pose.y,
                             0);
     }
-
+    bool Frontier::is_hidden(frontier_exploration::Frontier &fr, double thresh_distance){
+        return std::hypot(fr.middle.x - fr.reference_robot_pose.x, fr.middle.y - fr.reference_robot_pose.y) < thresh_distance;
+    }
 
     std::vector<Frontier> Frontier::splitFrontier(Frontier& fr, double max_angular_size){
         Frontier fr1, fr2;

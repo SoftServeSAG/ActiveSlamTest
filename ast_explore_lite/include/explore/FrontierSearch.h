@@ -22,7 +22,8 @@ public:
    */
   FrontierSearch(costmap_2d::Costmap2D* costmap, double potential_scale,
                  double gain_scale, double min_frontier_size,
-                 int use_every_k_point,double max_frontier_angular_size);
+                 int use_every_k_point,double max_frontier_angular_size,
+                 double hidden_distance_threshold);
 
   /**
    * @brief Runs search implementation, outward from the start position
@@ -85,7 +86,8 @@ private:
   double potential_scale_, gain_scale_;
   double min_frontier_size_;
   int use_every_k_point_{1};
-  double max_frontier_angular_size_{10.0}; // TODO make a parameter on parameter server
+  double max_frontier_angular_size_{10.0};
+  double hidden_distance_threshold_;
 };
 }
 #endif

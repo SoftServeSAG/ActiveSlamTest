@@ -25,13 +25,15 @@ FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap,
                                double potential_scale, double gain_scale,
                                double min_frontier_size,
                                int use_every_k_point,
-                               double max_frontier_angular_size)
+                               double max_frontier_angular_size,
+                               double hidden_distance_threshold)
   : costmap_(costmap)
   , potential_scale_(potential_scale)
   , gain_scale_(gain_scale)
-  , min_frontier_size_(min_frontier_size)
+  , min_frontier_size_(min_frontier_size) // TODO provide direct reading from parameter server in constructor
   , use_every_k_point_(use_every_k_point)
   , max_frontier_angular_size_(max_frontier_angular_size)
+  , hidden_distance_threshold_(hidden_distance_threshold)
 {
 }
 
@@ -140,9 +142,11 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
 
   FrontierParams fr_par;
   fr_par.reference_robot_pose = makePointMsg(reference_x, reference_y);
-  fr_par.left_each = this->use_every_k_point_; // TODO pass those parameters during parameter reading
+  fr_par.sparsify_k_times = this->use_every_k_point_; // TODO pass those parameters during parameter reading
   fr_par.max_angular_size = this->max_frontier_angular_size_;
   fr_par.min_frontier_size = this->min_frontier_size_;
+  fr_par.hidden_distance_threshold = this->hidden_distance_threshold_;
+
 
 size_t  cntr{0};
 
@@ -161,12 +165,12 @@ size_t  cntr{0};
         costmap_->mapToWorld(mx, my, wx, wy);
 
         // leaving only each n-th point
+          geometry_msgs::Point reference_scope_point;
+          reference_scope_point.x = wx - reference_x;
+          reference_scope_point.y = wy - reference_y;
+          fr_par.vectors_to_points.push_back(reference_scope_point);
         if (cntr++ % this->use_every_k_point_ == 0){
-            geometry_msgs::Point reference_scope_point;
-            reference_scope_point.x = wx - reference_x;
-            reference_scope_point.y = wy - reference_y;
             output.vectors_to_points.push_back(reference_scope_point);
-            fr_par.vectors_to_points.push_back(reference_scope_point);
             output.middle.x += wx; // map frame coords
             output.middle.y += wy;
         }
@@ -180,6 +184,7 @@ size_t  cntr{0};
   output.middle.x /= output.vectors_to_points.size();
   output.middle.y /= output.vectors_to_points.size();
   /*KD*/
+  fr_par.middle = output.middle; // todo take it away
   std::sort(output.vectors_to_points.begin(), output.vectors_to_points.end(),
           [](const geometry_msgs::Point &p1,const  geometry_msgs::Point &p2)
           {return atan2(p1.y, p1.x) < atan2(p2.y, p2.x);}
@@ -187,9 +192,11 @@ size_t  cntr{0};
 
   // fixme find out why there are occuring empty frontiers (empty raw points)
   output.interpolated_line = Frontier::approximateFrontierByViewAngle(output);
-  std::vector<Frontier> splitted_frontiers{output};
-if (!output.vectors_to_points.empty()){
 
+  output = Frontier(fr_par); // <--- biffurcation point
+  std::vector<Frontier> splitted_frontiers{output};
+
+if (!output.vectors_to_points.empty()){
     double degrees_distance = angular_vector_distance(output.interpolated_line.first, output.interpolated_line.second, output.reference_robot_pose);
     if (degrees_distance > this->max_frontier_angular_size_){
         ROS_INFO_STREAM("Detected wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  SPLITTING...");
@@ -221,9 +228,7 @@ bool FrontierSearch::isNewFrontierCell(unsigned int idx,
 }
 
 // todo Detect other room case
-bool FrontierSearch::is_hidden(frontier_exploration::Frontier &fr, double thresh_distance){
-    return std::hypot(fr.middle.x - fr.reference_robot_pose.x, fr.middle.y - fr.reference_robot_pose.y) < thresh_distance;
-}
+
 
 double FrontierSearch::frontierCost(const Frontier& frontier)
 {

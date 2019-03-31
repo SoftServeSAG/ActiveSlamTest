@@ -39,7 +39,7 @@
 
 
 #include "explore/Explore.h"
-
+#include "explore/Frontier.h"
 
 inline static bool operator==(const geometry_msgs::Point& one,
                               const geometry_msgs::Point& two)
@@ -80,7 +80,8 @@ Explore::Explore()
 
   search_ = frontier_exploration::FrontierSearch(costmap_client_.getCostmap(),
                                                  potential_scale_, gain_scale_,
-                                                 min_frontier_size,  use_each_k_point, max_frontier_angular_size);
+                                                 min_frontier_size,  use_each_k_point, max_frontier_angular_size,
+                                                 hidden_distance_threshold);
 
   if (visualize_) {
     marker_array_publisher_ =
@@ -248,7 +249,7 @@ void Explore::makePlan()
 
   // TODO move this and other frontiers init stuff to class constructor
   for (auto &fr: frontiers) {
-    fr.hidden = search_.is_hidden(fr, hidden_distance_threshold);
+    fr.hidden = frontier_exploration::Frontier::is_hidden(fr, hidden_distance_threshold);
   }
 
   // publish frontiers as visualization markers
