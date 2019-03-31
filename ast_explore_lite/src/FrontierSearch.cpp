@@ -139,6 +139,7 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
   fr_par.max_angular_size = this->max_frontier_angular_size_;
   fr_par.min_frontier_size = this->min_frontier_size_;
   fr_par.hidden_distance_threshold = this->hidden_distance_threshold_;
+  fr_par.needSparsify = true;
 
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
@@ -168,7 +169,7 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
     // fixme find out why there are occuring empty frontiers (empty raw points)
 if (!fr_par.vectors_to_points.empty()){
     splitted_frontiers = {Frontier(fr_par)};
-
+    output = Frontier(fr_par);
     double degrees_distance = angular_vector_distance(output.interpolated_line.first, output.interpolated_line.second, output.reference_robot_pose);
     if (degrees_distance > this->max_frontier_angular_size_){
         ROS_INFO_STREAM("Detected wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  SPLITTING...");

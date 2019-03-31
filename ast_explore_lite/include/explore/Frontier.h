@@ -10,6 +10,7 @@
 
 
 namespace frontier_exploration {
+    struct Frontier;
 /**
  * @brief Represents a frontier
  */
@@ -20,8 +21,11 @@ namespace frontier_exploration {
         double min_frontier_size{3};
         int sparsify_k_times{1};
         double max_angular_size{10.0};
-        double hidden_distance_threshold;
+        double hidden_distance_threshold{3};
         bool presorted = false;
+        bool needSparsify = false;
+        FrontierParams(const Frontier& fr);
+        FrontierParams() = default;
     };
 
     struct Frontier {
@@ -33,7 +37,6 @@ namespace frontier_exploration {
         std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
         std::vector<geometry_msgs::Point> vectors_to_points;
         geometry_msgs::Point reference_robot_pose;
-
         bool hidden{false};
 
         /**
