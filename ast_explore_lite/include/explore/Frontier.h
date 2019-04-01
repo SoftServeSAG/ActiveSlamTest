@@ -85,6 +85,10 @@ namespace frontier_exploration {
          */
         static std::vector<Frontier> splitFrontier(const Frontier& fr);
 
+        /**
+         * @brief decides if this frontier is too big and requires to be split
+         * @return boolean for decision
+         */
         bool should_be_splitted() const;
 
     };
