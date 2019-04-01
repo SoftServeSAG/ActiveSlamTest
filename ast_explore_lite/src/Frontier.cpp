@@ -9,7 +9,8 @@ namespace frontier_exploration{
 
     Frontier::Frontier(FrontierParams &params):
         cost(params.cost),
-        reference_robot_pose(params.reference_robot_pose)
+        reference_robot_pose(params.reference_robot_pose),
+        hidden_dist_threshold(params.hidden_distance_threshold) // todo it should not be in frontier object
         {
 
         // moving saving only some part of detected frontier points
@@ -89,35 +90,22 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
     }
 
     std::vector<Frontier> Frontier::splitFrontier(Frontier& fr, double max_angular_size){
-        Frontier fr1, fr2;
-        std::vector<Frontier> frontiers{fr1, fr2}, vector_buf, res;
-        size_t splits = frontiers.size();
-        size_t current_element {0}, split_size {fr.vectors_to_points.size() / splits};
-
-        for (auto& this_fr: frontiers){
-            this_fr.reference_robot_pose = fr.reference_robot_pose;
-            this_fr.vectors_to_points = std::vector<geometry_msgs::Point>(
-                    fr.vectors_to_points.begin() + current_element,
-                    fr.vectors_to_points.begin() + current_element + split_size);
-
-            current_element += split_size;
-            this_fr.interpolated_line = {this_fr.vectors_to_points.front(), this_fr.vectors_to_points.back()};
-            this_fr.middle = *(this_fr.vectors_to_points.begin() + split_size / 2);
-
-            this_fr.middle = this_fr.fromReferenceFrame(this_fr.middle);
-            this_fr.interpolated_line.first = this_fr.fromReferenceFrame(this_fr.interpolated_line.first);
-            this_fr.interpolated_line.second = this_fr.fromReferenceFrame(this_fr.interpolated_line.second);
-
-            if (fr.vectors_to_points.end() - fr.vectors_to_points.begin() - current_element < split_size) {
-                this_fr.vectors_to_points.insert(this_fr.vectors_to_points.end(),
-                                                 fr.vectors_to_points.begin() + current_element,
-                                                 fr.vectors_to_points.end()); // uppend last chunk in case of division leftover
-            }
+        std::vector<Frontier> vector_buf, res;
+        size_t split_size {fr.vectors_to_points.size() / 2};
+        FrontierParams fr_par(fr); // saving all parameters from initial frontier
+        // defining subfrontiers points by itarator onto original points vector
+        using subfrontier_points = std::pair<std::vector<geometry_msgs::Point>::iterator,std::vector<geometry_msgs::Point>::iterator>;
+        subfrontier_points first_points = {fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + split_size};
+        subfrontier_points second_points = {fr.vectors_to_points.begin() + split_size, fr.vectors_to_points.end()};
+        auto splits = {first_points, second_points};
+        for (auto& split: splits){
+            Frontier this_fr = Frontier(fr_par);
+            this_fr.vectors_to_points = std::vector<geometry_msgs::Point>(split.first, split.second);
 
             double fr_angular_dist = angular_vector_distance(this_fr.interpolated_line.first, this_fr.interpolated_line.second);
-            ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << frontiers[0].vectors_to_points.size() << "] PTS");
+            ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << this_fr.vectors_to_points.size() << "] PTS");
             if (fr_angular_dist > max_angular_size
-                && fr1.vectors_to_points.size() > 6)  // to allways have two subdrontiers with middlepoints
+                && this_fr.vectors_to_points.size() > 6)  // to allways have two subdrontiers with middlepoints
             {
                 ROS_DEBUG_STREAM("PERFORM FRONTIER RECURSIVE SPLITTING");
                 vector_buf = splitFrontier(this_fr, max_angular_size);
@@ -135,33 +123,7 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
             vectors_to_points{fr.vectors_to_points},
             min_frontier_size{3},
             sparsify_k_times{1},
-            max_angular_size{10.0}{
+            max_angular_size{10.0},
+            hidden_distance_threshold(fr.hidden_dist_threshold){
     }
 }
-//    std::vector<Frontier> Frontier::splitFrontier(Frontier& fr, double max_angular_size){
-//        std::vector<Frontier> subfrontiers, res;
-//        size_t split_size {fr.vectors_to_points.size() / 2};
-//        auto first_split = {fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + split_size};
-//        auto second_split = {fr.vectors_to_points.begin() + split_size, fr.vectors_to_points.end()};
-//        auto splits = {first_split, second_split};
-//        FrontierParams fr_par(fr);
-//        for (auto& this_split: splits){
-//            fr_par.vectors_to_points = std::vector<geometry_msgs::Point>(*this_split.begin(), *this_split.end());
-//            Frontier subfrontier (fr_par);
-//
-//            double fr_angular_dist = angular_vector_distance(subfrontier.interpolated_line.first, subfrontier.interpolated_line.second);
-//            ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << subfrontier.vectors_to_points.size() << "] PTS");
-//            if (fr_angular_dist > max_angular_size
-//                && subfrontier.vectors_to_points.size() > 6)  // to always have two subfrontiers with middlepoints
-//            {
-//                ROS_DEBUG_STREAM("PERFORM FRONTIER RECURSIVE SPLITTING");
-//                subfrontiers = splitFrontier(subfrontier, max_angular_size);
-//            } else{
-//                subfrontiers = {subfrontier};
-//            }
-//            res.insert(res.end(), subfrontiers.begin(), subfrontiers.end());
-//        }
-//        return res;
-//    }
-//
-//}

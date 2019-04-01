@@ -21,7 +21,7 @@ namespace frontier_exploration {
         double min_frontier_size{3};
         int sparsify_k_times{1};
         double max_angular_size{10.0};
-        double hidden_distance_threshold{3};
+        double hidden_distance_threshold{0};// all frontiers are of same status if not defined else
         bool presorted = false;
         bool needSparsify = false;
         FrontierParams(const Frontier& fr);
@@ -30,7 +30,7 @@ namespace frontier_exploration {
 
     struct Frontier {
         //todo improve this struct functionality
-        double min_distance{std::numeric_limits<double>::infinity()};
+        double min_distance {std::numeric_limits<double>::infinity()}; //todo drop it, now unused but required for explore algo
         double cost{0.0};
         geometry_msgs::Point initial;
         geometry_msgs::Point middle;
@@ -38,6 +38,7 @@ namespace frontier_exploration {
         std::vector<geometry_msgs::Point> vectors_to_points;
         geometry_msgs::Point reference_robot_pose;
         bool hidden{false};
+        double hidden_dist_threshold {0}; // todo move it from structure
 
         /**
          * @brief default constructor (in case we need to initialize container of values, but can't pass arguments for
