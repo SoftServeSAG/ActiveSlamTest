@@ -170,6 +170,7 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
 if (!fr_par.vectors_to_points.empty()){
     splitted_frontiers = {Frontier(fr_par)};
     output = Frontier(fr_par);
+    // TODO separate to splitting heuristics function
     double degrees_distance = angular_vector_distance(output.interpolated_line.first, output.interpolated_line.second, output.reference_robot_pose);
     if (degrees_distance > this->max_frontier_angular_size_){
         ROS_INFO_STREAM("Detected wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  SPLITTING...");

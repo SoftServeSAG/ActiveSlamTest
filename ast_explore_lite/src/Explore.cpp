@@ -247,11 +247,6 @@ void Explore::makePlan()
     return;
   }
 
-  // TODO move this and other frontiers init stuff to class constructor
-  for (auto &fr: frontiers) {
-    fr.hidden = frontier_exploration::Frontier::is_hidden(fr, hidden_distance_threshold);
-  }
-
   // publish frontiers as visualization markers
   if (visualize_) {
     visualizeFrontiers(frontiers);
@@ -261,7 +256,6 @@ void Explore::makePlan()
   // find non blacklisted frontier
   std::vector<frontier_exploration::Frontier> hidden_frontiers {frontiers.size()};
   auto it = std::copy_if (frontiers.begin(), frontiers.end(), hidden_frontiers.begin(), [this](frontier_exploration::Frontier &fr){return fr.hidden;} );
-//  auto hidden_n = ;
   hidden_frontiers.resize(std::distance(hidden_frontiers.begin(), it));
 
   auto frontier = std::find_if_not(hidden_frontiers.begin(), hidden_frontiers.end(),

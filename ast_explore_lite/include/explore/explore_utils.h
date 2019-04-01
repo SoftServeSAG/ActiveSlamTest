@@ -25,7 +25,6 @@ namespace frontier_exploration{
         return angular_vector_distance(p1.x - reference_pt.x, p1.y - reference_pt.y, p2.x - reference_pt.x, p2.y - reference_pt.y);
     }
 
-// for now is not used
     inline geometry_msgs::Point getClosestPointTo(const std::vector<geometry_msgs::Point> &distance_vectors,
                                                   const geometry_msgs::Point &goal){
         auto min_elem_iter = std::min_element(distance_vectors.begin(), distance_vectors.end(),

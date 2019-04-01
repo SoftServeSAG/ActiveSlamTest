@@ -12,7 +12,8 @@
 namespace frontier_exploration {
     struct Frontier;
 /**
- * @brief Represents a frontier
+ * @brief Represents a frontier, all required info for building one and flags with instructions for builder
+ * @remark global parameters need to be reallocated from here
  */
     struct FrontierParams{
         double cost{std::numeric_limits<double>::infinity()};
@@ -32,7 +33,6 @@ namespace frontier_exploration {
         //todo improve this struct functionality
         double min_distance {std::numeric_limits<double>::infinity()}; //todo drop it, now unused but required for explore algo
         double cost{0.0};
-        geometry_msgs::Point initial;
         geometry_msgs::Point middle;
         std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
         std::vector<geometry_msgs::Point> vectors_to_points;
@@ -50,16 +50,39 @@ namespace frontier_exploration {
 
     public:
         // service functions
+        /**
+         * @param pt point coordinates in map frame
+         * @return point in robot coordinates
+         */
         geometry_msgs::Point toReferenceFrame(const geometry_msgs::Point &pt);
+        /**
+         * @param pt_in_reference_frame
+         * @return point in map frame coordinates
+         */
         geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
+        /**
+         * @brief uses view angle from robot current position to approximate frontier pointcloud with a line
+         * @param fr frontier to be approximated
+         * @return endpoint of a line approximated by this method
+         */
         static std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierByViewAngle(
                 frontier_exploration::Frontier &fr);
-        // unused
+        /**
+         * @brief uses planar distance between points to  approximate frontier pointcloud with a line
+         * idea is that approximated point shold lie on some convex figure (therefore lie farther from each-other)
+         * @param fr frontier to be approximated
+         * @return endpoint of a line approximated by this method
+         */
         static std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(
                 frontier_exploration::Frontier &fr);
 
+        /**
+         * @brief splits frontier on subfrontiers recursively
+         * @param fr
+         * @param max_angular_size comparison currently performed only by view angle
+         * @return vector of splitted frontiers
+         */
         static std::vector<Frontier> splitFrontier(Frontier& fr, double max_angular_size);
-        static bool is_hidden(frontier_exploration::Frontier &fr, double thresh_distance);
 
     };
 

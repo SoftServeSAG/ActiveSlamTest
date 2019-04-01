@@ -26,11 +26,14 @@ namespace frontier_exploration{
             std::sort(vectors_to_points.begin(), vectors_to_points.end(), compareViewAngle);
         }
 
-//        if(!vectors_to_points.empty())
+//        if(!vectors_to_points.empty()) <-- beware this bug is still around, but checked outside
             middle = *(vectors_to_points.begin() + vectors_to_points.size() / 2);
             middle = fromReferenceFrame(middle);
     interpolated_line = Frontier::approximateFrontierByViewAngle(*this);
-    hidden = is_hidden(*this,  params.hidden_distance_threshold);
+    std::vector<geometry_msgs::Point> closest_points_candidates = {this->middle, this->interpolated_line.first, this->interpolated_line.second};
+    geometry_msgs::Point closest_point  = getClosestPointTo(  closest_points_candidates,  reference_robot_pose);
+    min_distance = std::hypot(closest_point.x - reference_robot_pose.x , closest_point.y - reference_robot_pose.y);
+    hidden = min_distance  < params.hidden_distance_threshold;
     }
 
 
@@ -84,9 +87,6 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
         return makePointMsg(pt_in_reference_frame.x + reference_robot_pose.x,
                             pt_in_reference_frame.y + reference_robot_pose.y,
                             0);
-    }
-    bool Frontier::is_hidden(frontier_exploration::Frontier &fr, double thresh_distance){
-        return std::hypot(fr.middle.x - fr.reference_robot_pose.x, fr.middle.y - fr.reference_robot_pose.y) < thresh_distance;
     }
 
     std::vector<Frontier> Frontier::splitFrontier(Frontier& fr, double max_angular_size){
