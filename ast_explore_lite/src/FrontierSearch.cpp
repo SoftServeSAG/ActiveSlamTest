@@ -115,9 +115,6 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
                                                        unsigned int reference,
                                                        std::vector<bool> &frontier_flag)
 {
-  // initialize frontier structure
-  Frontier output;
-
   // record initial contact point for frontier
   unsigned int ix, iy;
   costmap_->indexToCells(initial_cell, ix, iy);
@@ -165,19 +162,16 @@ std::vector<Frontier> FrontierSearch::buildNewFrontier(unsigned int initial_cell
     }
   }
 
-    std::vector<Frontier> splitted_frontiers;
+    std::vector<Frontier> resulting_frontiers;
     // fixme find out why there are occuring empty frontiers (empty raw points)
 if (!fr_par.vectors_to_points.empty()){
-    splitted_frontiers = {Frontier(fr_par)};
-    output = Frontier(fr_par);
-    // TODO separate to splitting heuristics function
-    double degrees_distance = angular_vector_distance(output.interpolated_line.first, output.interpolated_line.second, output.reference_robot_pose);
-    if (degrees_distance > this->max_frontier_angular_size_){
-        ROS_INFO_STREAM("Detected wide frontier [" << degrees_distance <<"]" << "PTS [" <<output.vectors_to_points.size()<< "]  SPLITTING...");
-        splitted_frontiers = Frontier::splitFrontier(output, max_frontier_angular_size_);
+    resulting_frontiers = {Frontier(fr_par)};
+    Frontier fr = Frontier(fr_par);
+    if(fr.should_be_splitted()){
+        resulting_frontiers = Frontier::splitFrontier(fr);
     }
 }
-  return splitted_frontiers;
+  return resulting_frontiers;
 }
 
 

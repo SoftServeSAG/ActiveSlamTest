@@ -10,13 +10,18 @@ namespace frontier_exploration{
     Frontier::Frontier(FrontierParams &params):
         cost(params.cost),
         reference_robot_pose(params.reference_robot_pose),
-        hidden_dist_threshold(params.hidden_distance_threshold) // todo it should not be in frontier object
+        hidden_dist_threshold(params.hidden_distance_threshold), // todo it should not be in frontier object
+        max_angular_size(params.max_angular_size)  // todo it should not be in frontier object
         {
 
         // moving saving only some part of detected frontier points
-        for (int i = 0; i < params.vectors_to_points.size(); ++i){
-        if (i % params.sparsify_k_times == 0)
-            vectors_to_points.push_back(params.vectors_to_points[i]);
+        if(params.needSparsify) {
+            for (int i = 0; i < params.vectors_to_points.size(); ++i) {
+                if (i % params.sparsify_k_times == 0)
+                    vectors_to_points.push_back(params.vectors_to_points[i]);
+            }
+        }else{
+            vectors_to_points = params.vectors_to_points;
         }
 
         if (!params.presorted){
@@ -89,12 +94,18 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
                             0);
     }
 
-    std::vector<Frontier> Frontier::splitFrontier(Frontier& fr, double max_angular_size){
+    bool Frontier::should_be_splitted() const{
+        double fr_angular_dist = angular_vector_distance(interpolated_line.first, interpolated_line.second);
+        ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << vectors_to_points.size() << "] PTS");
+        return  (fr_angular_dist > max_angular_size && vectors_to_points.size() > 6);  // to allways have two subdrontiers with middlepoints
+    }
+
+    std::vector<Frontier> Frontier::splitFrontier(const Frontier& fr){
         std::vector<Frontier> vector_buf, res;
         size_t split_size {fr.vectors_to_points.size() / 2};
         FrontierParams fr_par(fr); // saving all parameters from initial frontier
         // defining subfrontiers points by itarator onto original points vector
-        using subfrontier_points = std::pair<std::vector<geometry_msgs::Point>::iterator,std::vector<geometry_msgs::Point>::iterator>;
+        using subfrontier_points = std::pair<std::vector<geometry_msgs::Point>::const_iterator,std::vector<geometry_msgs::Point>::const_iterator>;
         subfrontier_points first_points = {fr.vectors_to_points.begin(), fr.vectors_to_points.begin() + split_size};
         subfrontier_points second_points = {fr.vectors_to_points.begin() + split_size, fr.vectors_to_points.end()};
         auto splits = {first_points, second_points};
@@ -102,13 +113,9 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
             Frontier this_fr = Frontier(fr_par);
             this_fr.vectors_to_points = std::vector<geometry_msgs::Point>(split.first, split.second);
 
-            double fr_angular_dist = angular_vector_distance(this_fr.interpolated_line.first, this_fr.interpolated_line.second);
-            ROS_DEBUG_STREAM("FR has [" << fr_angular_dist << "]  deg  [" << this_fr.vectors_to_points.size() << "] PTS");
-            if (fr_angular_dist > max_angular_size
-                && this_fr.vectors_to_points.size() > 6)  // to allways have two subdrontiers with middlepoints
-            {
+            if (this_fr.should_be_splitted()){
                 ROS_DEBUG_STREAM("PERFORM FRONTIER RECURSIVE SPLITTING");
-                vector_buf = splitFrontier(this_fr, max_angular_size);
+                vector_buf = splitFrontier(this_fr);
             } else{
                 vector_buf = {this_fr};
             }
@@ -123,7 +130,7 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
             vectors_to_points{fr.vectors_to_points},
             min_frontier_size{3},
             sparsify_k_times{1},
-            max_angular_size{10.0},
+            max_angular_size{fr.max_angular_size},
             hidden_distance_threshold(fr.hidden_dist_threshold){
     }
 }

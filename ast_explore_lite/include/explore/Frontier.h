@@ -39,6 +39,7 @@ namespace frontier_exploration {
         geometry_msgs::Point reference_robot_pose;
         bool hidden{false};
         double hidden_dist_threshold {0}; // todo move it from structure
+        double max_angular_size {0}; // todo move it from structure
 
         /**
          * @brief default constructor (in case we need to initialize container of values, but can't pass arguments for
@@ -82,7 +83,9 @@ namespace frontier_exploration {
          * @param max_angular_size comparison currently performed only by view angle
          * @return vector of splitted frontiers
          */
-        static std::vector<Frontier> splitFrontier(Frontier& fr, double max_angular_size);
+        static std::vector<Frontier> splitFrontier(const Frontier& fr);
+
+        bool should_be_splitted() const;
 
     };
 
