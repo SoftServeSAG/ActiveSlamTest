@@ -15,10 +15,8 @@
 
 - git:
     uri: https://github.com/SoftServeSAG/ActiveSlamTest.git
-    version: kinetic-devel
     local-name: activeslam
 
 - git:
     uri: https://github.com/SoftServeSAG/ss_tutrle3.git
-    version: kinetic-devel
     local-name: ss_turtle3_move_base
