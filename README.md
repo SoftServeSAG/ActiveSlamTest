@@ -12,7 +12,7 @@ The first time You start the docker, You have to execute the following command
 
 ```
 # TO HAVE WIFI network working
-docker run -it --name assistant_turtle_dev --net=host  -e DISPLAY -e LOCAL_USER_ID=$(id -u) -v /tmp/.X11-unix:/tmp/.X11-unix:rw lyubomyrd/activeslam:latest
+docker run -it --name activeslam_dev --net=host  -e DISPLAY -e LOCAL_USER_ID=$(id -u) -v /tmp/.X11-unix:/tmp/.X11-unix:rw lyubomyrd/activeslam:latest
 
 docker run -it --name activeslam_dev -p 8080:8080 -p 8090:8090 -p 9090:9090 -e DISPLAY -e LOCAL_USER_ID=$(id -u) -v /tmp/.X11-unix:/tmp/.X11-unix:rw lyubomyrd/activeslam:latest
 ```
