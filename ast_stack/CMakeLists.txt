@@ -17,7 +17,10 @@ find_package(catkin REQUIRED
         turtlebot3_teleop
         turtlebot3_msgs
         turtlebot3_gazebo
-        turtlebot3_fake)
+        turtlebot3_fake
+        gmapping
+        dwa_local_planner
+        )
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system )
