@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   visualization_msgs
+  gmapping
 )
 
 ###################################
@@ -28,6 +29,7 @@ catkin_package(
     nav_msgs
     std_msgs
     visualization_msgs
+    gmapping
 )
 
 ###########

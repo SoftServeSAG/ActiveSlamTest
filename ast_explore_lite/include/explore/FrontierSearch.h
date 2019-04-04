@@ -2,31 +2,10 @@
 #define FRONTIER_SEARCH_H_
 
 #include <costmap_2d/costmap_2d.h>
-
+#include "explore/Frontier.h"
 namespace frontier_exploration
 {
 
-    /**
- * @brief Represents a frontier
- *
- */
-
-struct Frontier {
-    //todo improve this struct functionality
-  double min_distance{std::numeric_limits<double>::infinity()};
-  double cost{0.0};
-  geometry_msgs::Point initial;
-  geometry_msgs::Point centroid;
-//  geometry_msgs::Point closest_point; // for now we ommit it as recomputing is qwestionable
-  std::pair<geometry_msgs::Point,geometry_msgs::Point> interpolated_line;
-//  std::vector<geometry_msgs::Point> points;
-  std::vector<geometry_msgs::Point> vectors_to_points;
-  geometry_msgs::Point reference_robot_pose;
-    geometry_msgs::Point toReferenceFrame(const geometry_msgs::Point &pt);
-    geometry_msgs::Point fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame);
-    bool hidden{false};
-    Frontier() = default;
-};
 
 /**
  * @brief Thread-safe implementation of a frontier-search task for an input
@@ -43,7 +22,8 @@ public:
    */
   FrontierSearch(costmap_2d::Costmap2D* costmap, double potential_scale,
                  double gain_scale, double min_frontier_size,
-                 int use_every_k_point,double max_frontier_angular_size);
+                 int use_every_k_point,double max_frontier_angular_size,
+                 double hidden_distance_threshold);
 
   /**
    * @brief Runs search implementation, outward from the start position
@@ -52,13 +32,19 @@ public:
    */
   std::vector<Frontier> searchFrom(geometry_msgs::Point position);
 
+  /**
+   * @brief calculates if frontier should be considered hidden
+   * @param fr considered frontier itself
+   * @param distance_thresh if distance to frontier less then thresh -- to consider it hidden
+   */
+  bool is_hidden(frontier_exploration::Frontier &fr, double distance_thresh);
 
-    bool is_hidden(frontier_exploration::Frontier &fr, double distance_thresh);
+
 protected:
-    std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(Frontier &fr,
-                                                                                         geometry_msgs::Point &reference_robot);
-    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierByViewAngle(Frontier &fr);
-    std::vector<Frontier> splitFrontier(Frontier& fr);
+//    std::pair<geometry_msgs::Point, geometry_msgs::Point> approxFrontierByPlanarFarthest(Frontier &fr,
+//                                                                                         geometry_msgs::Point &reference_robot);
+//    std::pair<geometry_msgs::Point, geometry_msgs::Point> approximateFrontierByViewAngle(Frontier &fr);
+//    std::vector<Frontier> splitFrontier(Frontier& fr);
 
 
   /**
@@ -100,7 +86,8 @@ private:
   double potential_scale_, gain_scale_;
   double min_frontier_size_;
   int use_every_k_point_{1};
-  double max_frontier_angular_size_{10.0}; // TODO make a parameter on parameter server
+  double max_frontier_angular_size_{10.0};
+  double hidden_distance_threshold_;
 };
 }
 #endif
