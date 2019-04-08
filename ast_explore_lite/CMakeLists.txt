@@ -28,7 +28,6 @@ catkin_package(
     nav_msgs
     std_msgs
     visualization_msgs
-    gmapping
 )
 
 ###########

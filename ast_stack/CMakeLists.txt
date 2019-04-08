@@ -22,6 +22,15 @@ find_package(catkin REQUIRED
         dwa_local_planner
         )
 
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(
+  CATKIN_DEPENDS
+        gmapping
+        dwa_local_planner
+)
+
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system )
 
