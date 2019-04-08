@@ -50,13 +50,13 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approxFrontierBy
     for (auto &point: fr.vectors_to_points){
         heuristics_dist =
                 std::hypot(point.x , point.y ) +  /* robot_point_dist */
-                std::hypot(point.x , point.y ); /* centroid_point dist */
+                std::hypot(point.x , point.y ); /* centroid_point dist */ //CheckMe why duplicate
         if (heuristics_dist > max_dist){
             max_dist = heuristics_dist;
             p1 = point;
         }
-    }
-    max_dist = 0.0;
+
+    max_dist = 0.0; } //CheckMe why zero
     for (auto &point: fr.vectors_to_points){
         heuristics_dist =
                 std::hypot(point.x - p1.x , point.y - p1.y) +  /*  point-point dist */
@@ -69,7 +69,8 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approxFrontierBy
     return {p1, p2};
 }
 
-
+//CheckMe comments
+// Explanation needed
 std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFrontierByViewAngle(
         frontier_exploration::Frontier &fr) {
     geometry_msgs::Point p1, p2;
@@ -81,6 +82,8 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
     return {p1, p2};
 }
 
+
+//CheckMe indents
     inline geometry_msgs::Point Frontier::toReferenceFrame(const geometry_msgs::Point &pt_in_absolute_frame){
         return makePointMsg(
                 pt_in_absolute_frame.x - reference_robot_pose.x,
@@ -88,6 +91,7 @@ std::pair<geometry_msgs::Point, geometry_msgs::Point> Frontier::approximateFront
                 0);
     }
 
+//CheckMe rotation of the frame
     inline  geometry_msgs::Point  Frontier::fromReferenceFrame(const geometry_msgs::Point &pt_in_reference_frame){
         return makePointMsg(pt_in_reference_frame.x + reference_robot_pose.x,
                             pt_in_reference_frame.y + reference_robot_pose.y,
